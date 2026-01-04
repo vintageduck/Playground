@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>HTCM Playground</title>
+    
+    <!-- iOS PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- These meta tags help the browser anticipate the colour mode -->
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-title" content="Playground">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            /* Light Mode Default */
+            --bg-body: #f2f2f7; /* iOS grouped background */
+            --bg-card: #ffffff;
+            --text-main: #000000;
+            --text-sub: #8e8e93;
+            --separator: #c6c6c8;
+            --accent: #000000;
+            
+            /* System Serif Stack */
+            --font-serif: "New York", "Times New Roman", Times, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #000000;
+                --bg-card: #1c1c1e; /* iOS Dark Mode Gray */
+                --text-main: #ffffff;
+                --text-sub: #98989d;
+                --separator: #38383a;
+                --accent: #ffffff;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-serif); /* Serif by default */
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            /* Safe area padding for notches */
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* --- HEADER --- */
+        header {
+            padding: 40px 20px 20px 20px;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-family: var(--font-sans);
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-sub);
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        /* --- CARD LIST --- */
+        .list-container {
+            display: flex;
+            flex-direction: column;
+            padding: 0 20px;
+            gap: 16px;
+            padding-bottom: 40px;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: 12px;
+            padding: 20px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            transition: transform 0.2s ease, background-color 0.2s;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+            background-color: var(--separator);
+        }
+
+        .card-content {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .card-icon {
+            font-size: 24px;
+            width: 32px;
+            text-align: center;
+        }
+
+        .card-text h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .card-text p {
+            margin: 4px 0 0 0;
+            font-family: var(--font-sans);
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .arrow {
+            color: var(--text-sub);
+            opacity: 0.5;
+        }
+         .arrow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: var(--bg-card); /* Matches card bg (white or dark) */
+            border: 1px solid var(--text-sub);
+            color: var(--text-sub);
+            transition: all 0.3s ease;
+            flex-shrink: 0; /* Prevents squishing on small screens */
+        }
+
+        /* --- FOOTER --- */
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-family: var(--font-sans);
+            font-size: 12px;
+            color: var(--text-sub);
+            opacity: 0.6;
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HTCM</h1>
+        <div class="subtitle">Reminder: no one cares</div>
+    </header>
+
+    <div class="list-container">
+        
+        <!-- Item 1 -->
+        <a href="template-widget/index.html" class="card">
+            <div class="card-content">
+                <div class="card-icon">𝓧</div>
+                <div class="card-text">
+                    <h2>10?</h2>
+                    <p>A reviewed scale</p>
+                </div>
+            </div>
+            <div class="arrow">→</div>
+        </a>
+
+   
+
+    </div>
+
+    <footer>
+        Directory v1.0 • Syresham
+    </footer>
+
+    <script>
+        // Service Worker for Offline capability
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .catch(err => console.log('SW failed', err));
+            });
+        }
+    </script>
+
+</body>
+</html>
