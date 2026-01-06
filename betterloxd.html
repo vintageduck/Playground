@@ -89,8 +89,8 @@
         
         <!-- Header -->
         <div class="text-center space-y-1">
-            <h1 class="text-3xl text-white font-serif-lb font-bold tracking-tight">2026 Diary</h1>
-            <p class="text-xs uppercase tracking-widest font-semibold text-[#556677]">Progress Tracker</p>
+            <h1 class="text-3xl text-white font-serif-lb font-bold tracking-tight">Betterloxd</h1>
+            <p class="text-xs uppercase tracking-widest font-semibold text-[#556677]">I am not a cinephile!</p>
         </div>
 
         <!-- Main Card -->
@@ -356,17 +356,17 @@
                 // Recommendation
                 const paceDiff = reqW - avgW;
                 if (paceDiff > 1) {
-                     recEl.innerHTML = "You need to pick up the pace significantly to hit your target.";
+                     recEl.innerHTML = "Drop the social life. Just “Movies”. It’s cleaner.";
                 } else if (paceDiff > 0) {
-                     recEl.innerHTML = "Slightly behind. Try to squeeze in a double feature this weekend.";
+                     recEl.innerHTML = "Just keep swimming.";
                 } else {
-                     recEl.innerHTML = "You're cruising. Maintain this pace and you'll finish comfortably.";
+                     recEl.innerHTML = "I am singlehandedly keeping cinema alive.";
                 }
                 
             } else if (remaining === 0) {
                 reqWeekEl.innerText = "-";
                 reqMonthEl.innerText = "-";
-                recEl.innerHTML = "Target achieved! Everything else is gravy.";
+                recEl.innerHTML = "Life's like a movie, write your own ending...";
             } else {
                 reqWeekEl.innerText = "End";
                 reqMonthEl.innerText = "End";
