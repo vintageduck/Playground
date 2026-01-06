@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- PWA: Matches status bar to background on iPhone -->
+    <meta name="theme-color" content="#14181c">
+    <title>Year in Film</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;0,900;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --lb-bg: #14181c;
+            --lb-card: #2c3440;
+            --lb-text: #99aabb;
+            --lb-white: #ffffff;
+            --lb-green: #00e054;
+            --lb-orange: #ff8000;
+            --lb-blue: #40bcf4;
+            --lb-grey: #455565;
+            --lb-track: #1f252d;
+        }
+
+        body {
+            background-color: var(--lb-bg);
+            color: var(--lb-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .font-serif-lb {
+            font-family: 'Merriweather', serif;
+        }
+
+        .lb-card {
+            background-color: var(--lb-card);
+            border-radius: 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .lb-input {
+            background: var(--lb-track);
+            color: var(--lb-white);
+            border: 1px solid #36404d;
+            transition: all 0.2s;
+            appearance: none; /* Removes default iOS input styling */
+        }
+        .lb-input:focus {
+            background: var(--lb-white);
+            color: var(--lb-bg);
+            border-color: var(--lb-white);
+            outline: none;
+        }
+
+        /* Smooth bar animations */
+        .bar-segment {
+            transition: width 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+            height: 100%;
+        }
+
+        .text-green { color: var(--lb-green); }
+        .text-orange { color: var(--lb-orange); }
+        .text-blue { color: var(--lb-blue); }
+        .bg-green { background-color: var(--lb-green); }
+        .bg-orange { background-color: var(--lb-orange); }
+        .bg-blue { background-color: var(--lb-blue); }
+        .bg-grey { background-color: var(--lb-grey); }
+
+        /* Back Button Hover */
+        .back-btn:hover svg {
+            transform: translateX(-2px);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4 relative">
+
+    <!-- Aesthetic Back Button (Top Left) -->
+    <a href="index.html" class="absolute top-6 left-6 flex items-center gap-2 text-[#677589] hover:text-white transition-colors back-btn group no-underline">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform">
+            <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        <span class="text-xs uppercase tracking-widest font-bold hidden sm:inline-block group-hover:text-white">Index</span>
+    </a>
+
+    <div class="w-full max-w-xl space-y-8 mt-8">
+        
+        <!-- Header -->
+        <div class="text-center space-y-1">
+            <h1 class="text-3xl text-white font-serif-lb font-bold tracking-tight">2026 Diary</h1>
+            <p class="text-xs uppercase tracking-widest font-semibold text-[#556677]">Progress Tracker</p>
+        </div>
+
+        <!-- Main Card -->
+        <div class="lb-card p-6 md:p-8 space-y-10 relative">
+            
+            <!-- Inputs -->
+            <div class="grid grid-cols-2 gap-8">
+                <div class="space-y-2">
+                    <label class="block text-xs uppercase tracking-wider font-bold text-[#677589]">Annual Goal</label>
+                    <input type="number" id="goalInput" class="lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center">
+                </div>
+                <div class="space-y-2">
+                    <label class="block text-xs uppercase tracking-wider font-bold text-[#677589]">Watched</label>
+                    <input type="number" id="watchedInput" class="lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-[#00e054]">
+                </div>
+            </div>
+
+            <!-- The Bar Gizmo -->
+            <div class="space-y-2 pt-2">
+                
+                <!-- Labels above bar -->
+                <div class="flex justify-between text-xs font-serif-lb text-white opacity-80 pb-1">
+                    <span>0</span>
+                    <span id="goalLabel">200</span>
+                </div>
+
+                <!-- Progress Bar Container -->
+                <div class="relative h-10 w-full bg-[#14181c] rounded-sm overflow-visible border border-white/5">
+                    
+                    <!-- Inner Bar (Flexbox for segments) -->
+                    <div class="h-full w-full flex overflow-hidden rounded-sm relative z-10">
+                        <!-- 
+                           Logic Reverted:
+                           BEHIND: [ Green (Watched) ][ Orange (Diff) ][ Grey (Remaining) ]
+                           AHEAD:  [ Green (Target) ][ Blue (Surplus) ][ Grey (Remaining) ]
+                        -->
+                        <div id="seg1" class="bar-segment bg-green"></div>
+                        <div id="seg2" class="bar-segment"></div>
+                        <div id="seg3" class="bar-segment bg-[#1f252d]"></div>
+                    </div>
+                </div>
+
+                <!-- Percentages below bar -->
+                <div class="flex justify-between items-start pt-3">
+                    <div class="text-left">
+                        <p class="text-[10px] uppercase tracking-wider text-[#677589] font-bold">Goal Progress</p>
+                        <p id="pctGoal" class="text-xl font-serif-lb text-white font-bold">0%</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] uppercase tracking-wider text-[#677589] font-bold">Year Elapsed</p>
+                        <p id="pctYear" class="text-xl font-serif-lb text-[#677589]">0%</p>
+                    </div>
+                </div>
+                
+                <!-- Delta / Difference Text -->
+                <div class="text-center pt-2">
+                    <p id="deltaText" class="text-sm font-serif-lb italic">
+                        <!-- Dynamic Text -->
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Current Stats -->
+            <div class="lb-card p-5">
+                <h3 class="text-xs uppercase tracking-widest font-bold text-[#677589] mb-3 border-b border-white/5 pb-2">Your Pace</h3>
+                <div class="flex justify-between items-baseline">
+                    <div>
+                        <span id="avgWeek" class="text-2xl font-serif-lb text-white font-bold">0.0</span>
+                        <span class="text-xs text-[#556677] ml-1">/ week</span>
+                    </div>
+                    <div>
+                        <span id="avgMonth" class="text-2xl font-serif-lb text-white font-bold">0.0</span>
+                        <span class="text-xs text-[#556677] ml-1">/ month</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Required Stats -->
+            <div class="lb-card p-5">
+                <h3 class="text-xs uppercase tracking-widest font-bold text-[#677589] mb-3 border-b border-white/5 pb-2">To Finish</h3>
+                <div class="flex justify-between items-baseline">
+                    <div>
+                        <span id="reqWeek" class="text-2xl font-serif-lb text-white font-bold">0.0</span>
+                        <span class="text-xs text-[#556677] ml-1">/ week</span>
+                    </div>
+                    <div>
+                        <span id="reqMonth" class="text-2xl font-serif-lb text-white font-bold">0.0</span>
+                        <span class="text-xs text-[#556677] ml-1">/ month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recommendation -->
+         <div class="text-center px-4 pb-8">
+            <p id="recommendation" class="text-sm font-serif-lb text-[#899aa1] leading-relaxed italic">
+                <!-- Text -->
+            </p>
+            <div class="pt-6">
+                <button onclick="reset()" class="text-[10px] uppercase tracking-widest text-[#445566] hover:text-white transition-colors cursor-pointer">Reset Data</button>
+            </div>
+         </div>
+
+    </div>
+
+    <script>
+        // --- Elements ---
+        const goalInput = document.getElementById('goalInput');
+        const watchedInput = document.getElementById('watchedInput');
+        const goalLabel = document.getElementById('goalLabel');
+        
+        const seg1 = document.getElementById('seg1');
+        const seg2 = document.getElementById('seg2');
+        const seg3 = document.getElementById('seg3');
+        
+        const pctGoalEl = document.getElementById('pctGoal');
+        const pctYearEl = document.getElementById('pctYear');
+        const deltaTextEl = document.getElementById('deltaText');
+        
+        const avgWeekEl = document.getElementById('avgWeek');
+        const avgMonthEl = document.getElementById('avgMonth');
+        const reqWeekEl = document.getElementById('reqWeek');
+        const reqMonthEl = document.getElementById('reqMonth');
+        const recEl = document.getElementById('recommendation');
+
+        // --- Date Math ---
+        const now = new Date();
+        const year = now.getFullYear();
+        const startOfYear = new Date(year, 0, 1);
+        const dayOfYear = Math.floor((now - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
+        const totalDays = ((year % 4 === 0 && year % 100 > 0) || year % 400 === 0) ? 366 : 365;
+        const pctYear = (dayOfYear / totalDays); // 0.0 to 1.0
+
+        // --- Functions ---
+
+        function init() {
+            const savedGoal = localStorage.getItem('lb_goal_v2');
+            const savedWatched = localStorage.getItem('lb_watched_v2');
+            
+            goalInput.value = savedGoal ? savedGoal : 200;
+            watchedInput.value = savedWatched ? savedWatched : 0;
+            
+            update();
+        }
+
+        function save() {
+            localStorage.setItem('lb_goal_v2', goalInput.value);
+            localStorage.setItem('lb_watched_v2', watchedInput.value);
+        }
+
+        function reset() {
+            if(confirm("Reset logs?")) {
+                goalInput.value = 200;
+                watchedInput.value = 0;
+                update();
+            }
+        }
+
+        function update() {
+            save();
+            
+            const goal = Math.max(1, parseInt(goalInput.value) || 0);
+            const watched = Math.max(0, parseInt(watchedInput.value) || 0);
+            
+            goalLabel.innerText = goal;
+
+            // 1. Calculate Theoretical Target (Where you should be today)
+            const targetToday = goal * pctYear;
+            const diff = watched - targetToday;
+            
+            // 2. Percentages
+            const pGoal = (watched / goal) * 100;
+            const pYear = pctYear * 100;
+
+            pctGoalEl.innerText = pGoal.toFixed(1) + "%";
+            pctYearEl.innerText = pYear.toFixed(1) + "%";
+            
+            // 3. Render Segments
+            
+            // Handle limits for visual bar logic
+            const visualWatched = Math.min(goal, watched);
+            const visualTarget = Math.min(goal, targetToday);
+
+            if (watched < targetToday) {
+                // BEHIND SCHEDULE
+                // [ Green (Watched) ] [ Orange (Gap to Target) ] [ Grey (Rest) ]
+                // Total of Green + Orange = Where we SHOULD be
+                
+                const greenWidth = (visualWatched / goal) * 100;
+                const orangeWidth = ((visualTarget - visualWatched) / goal) * 100;
+                
+                seg1.style.width = `${greenWidth}%`;
+                seg1.className = "bar-segment bg-green"; // Base Watched
+                
+                seg2.style.width = `${orangeWidth}%`;
+                seg2.className = "bar-segment bg-orange opacity-80"; // The Gap
+                
+                // Difference text
+                const moviesBehind = Math.round(targetToday - watched);
+                deltaTextEl.innerHTML = `You are <span class="text-orange font-bold">${moviesBehind}</span> movies behind schedule.`;
+                deltaTextEl.className = "text-sm font-serif-lb italic text-orange/80";
+
+                watchedInput.className = "lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-orange-400";
+
+            } else {
+                // AHEAD OF SCHEDULE (or on track)
+                // [ Green (Target Portion) ] [ Blue (Surplus) ] [ Grey (Rest) ]
+                // Total of Green + Blue = Watched
+                
+                const greenWidth = (visualTarget / goal) * 100;
+                const blueWidth = ((visualWatched - visualTarget) / goal) * 100;
+                
+                seg1.style.width = `${greenWidth}%`;
+                seg1.className = "bar-segment bg-green"; // The "On Track" portion
+                
+                seg2.style.width = `${blueWidth}%`;
+                seg2.className = "bar-segment bg-blue"; // The "Surplus"
+                
+                // Difference text
+                const moviesAhead = Math.round(watched - targetToday);
+                if(moviesAhead > 0) {
+                    deltaTextEl.innerHTML = `You are <span class="text-blue font-bold">${moviesAhead}</span> movies ahead of schedule.`;
+                    deltaTextEl.className = "text-sm font-serif-lb italic text-blue/80";
+                    watchedInput.className = "lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-blue-400";
+                } else {
+                    deltaTextEl.innerHTML = `You are perfectly on track.`;
+                    deltaTextEl.className = "text-sm font-serif-lb italic text-[#677589]";
+                    watchedInput.className = "lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-green-400";
+                }
+            }
+
+            // Segment 3 (Grey) fills the rest
+            seg3.style.flexGrow = 1;
+            
+            // 4. Statistics
+            const weeksGone = Math.max(1, dayOfYear / 7);
+            const weeksLeft = Math.max(0, (totalDays - dayOfYear) / 7);
+            
+            const monthsGone = Math.max(1, dayOfYear / 30.44);
+            const monthsLeft = Math.max(0, (totalDays - dayOfYear) / 30.44);
+            
+            const avgW = watched / weeksGone;
+            const avgM = watched / monthsGone;
+            
+            avgWeekEl.innerText = avgW.toFixed(1);
+            avgMonthEl.innerText = avgM.toFixed(1);
+            
+            const remaining = Math.max(0, goal - watched);
+            let reqW = 0, reqM = 0;
+            
+            if (remaining > 0 && weeksLeft > 0) {
+                reqW = remaining / weeksLeft;
+                reqM = remaining / monthsLeft;
+                
+                reqWeekEl.innerText = reqW.toFixed(1);
+                reqMonthEl.innerText = reqM.toFixed(1);
+                
+                // Recommendation
+                const paceDiff = reqW - avgW;
+                if (paceDiff > 1) {
+                     recEl.innerHTML = "You need to pick up the pace significantly to hit your target.";
+                } else if (paceDiff > 0) {
+                     recEl.innerHTML = "Slightly behind. Try to squeeze in a double feature this weekend.";
+                } else {
+                     recEl.innerHTML = "You're cruising. Maintain this pace and you'll finish comfortably.";
+                }
+                
+            } else if (remaining === 0) {
+                reqWeekEl.innerText = "-";
+                reqMonthEl.innerText = "-";
+                recEl.innerHTML = "Target achieved! Everything else is gravy.";
+            } else {
+                reqWeekEl.innerText = "End";
+                reqMonthEl.innerText = "End";
+                recEl.innerHTML = "Year is over.";
+            }
+        }
+
+        // Listeners
+        goalInput.addEventListener('input', update);
+        watchedInput.addEventListener('input', update);
+        
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
+
+
