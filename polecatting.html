@@ -37,8 +37,9 @@
 
         /* --- THE RAT SVG BACKGROUND --- */
         .rat-bg {
-            top: 70%;
-            /* Moved down to match new ergonomic cluster position */
+            position: absolute;
+            top: 50%;
+            left: 50%;
             transform: translate(-50%, -50%);
             width: 100vw;
             height: auto;
@@ -124,12 +125,12 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            justify-content: flex-end;
-            /* Push to bottom for ergonomics */
+            justify-content: center;
             align-items: center;
             position: relative;
-            padding-bottom: 12vh;
-            /* Lift up from the very bottom to optimal thumb zone */
+            /* Ensure relative context if needed */
+            margin-top: -40px;
+            /* Slight offset to visually center the plus button better against header/footer weight */
         }
 
         /* The Swappable Label */
