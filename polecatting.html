@@ -109,7 +109,8 @@
             z-index: 5;
             animation: fadeIn 0.3s ease;
             overflow: hidden;
-            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            padding-bottom: max(80px, env(safe-area-inset-bottom));
+            /* increased bottom padding to clear action bar */
         }
 
         .view.active {
@@ -403,8 +404,16 @@
         .action-bar {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
-            padding-bottom: 20px;
+            align-items: center;
+            padding: 20px;
+            padding-bottom: max(20px, env(safe-area-inset-bottom));
+            background: linear-gradient(to top, rgba(10, 10, 10, 0.95), rgba(10, 10, 10, 0));
+            /* Sticky footer effect if needed, but for now just padding */
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         #dataModal {
