@@ -104,7 +104,10 @@
                 </div>
                 <div class="space-y-2">
                     <label class="block text-xs uppercase tracking-wider font-bold text-[#677589]">Watched</label>
-                    <input type="number" id="watchedInput" class="lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-[#00e054]">
+                    <div class="flex items-center gap-2">
+                        <input type="number" id="watchedInput" class="lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-[#40bcf4]">
+                        <button onclick="incrementWatched()" class="h-full px-4 rounded bg-[#2c3440] border border-white/5 text-white hover:bg-[#36404d] transition-colors font-bold text-xl active:scale-95">+</button>
+                    </div>
                 </div>
             </div>
 
@@ -124,10 +127,10 @@
                     <div class="h-full w-full flex overflow-hidden rounded-sm relative z-10">
                         <!-- 
                            Logic Reverted:
-                           BEHIND: [ Green (Watched) ][ Orange (Diff) ][ Grey (Remaining) ]
-                           AHEAD:  [ Green (Target) ][ Blue (Surplus) ][ Grey (Remaining) ]
+                           BEHIND: [ Blue (Watched) ][ Orange (Diff) ][ Grey (Remaining) ]
+                           AHEAD:  [ Blue (Target) ][ Green (Surplus) ][ Grey (Remaining) ]
                         -->
-                        <div id="seg1" class="bar-segment bg-green"></div>
+                        <div id="seg1" class="bar-segment bg-blue"></div>
                         <div id="seg2" class="bar-segment"></div>
                         <div id="seg3" class="bar-segment bg-[#1f252d]"></div>
                     </div>
@@ -254,6 +257,11 @@
             }
         }
 
+        function incrementWatched() {
+            watchedInput.value = (parseInt(watchedInput.value) || 0) + 1;
+            update();
+        }
+
         function update() {
             save();
             
@@ -288,7 +296,7 @@
                 const orangeWidth = ((visualTarget - visualWatched) / goal) * 100;
                 
                 seg1.style.width = `${greenWidth}%`;
-                seg1.className = "bar-segment bg-green"; // Base Watched
+                seg1.className = "bar-segment bg-blue"; // Base Watched
                 
                 seg2.style.width = `${orangeWidth}%`;
                 seg2.className = "bar-segment bg-orange opacity-80"; // The Gap
@@ -309,21 +317,21 @@
                 const blueWidth = ((visualWatched - visualTarget) / goal) * 100;
                 
                 seg1.style.width = `${greenWidth}%`;
-                seg1.className = "bar-segment bg-green"; // The "On Track" portion
+                seg1.className = "bar-segment bg-blue"; // The "On Track" portion
                 
                 seg2.style.width = `${blueWidth}%`;
-                seg2.className = "bar-segment bg-blue"; // The "Surplus"
+                seg2.className = "bar-segment bg-green"; // The "Surplus"
                 
                 // Difference text
                 const moviesAhead = Math.round(watched - targetToday);
                 if(moviesAhead > 0) {
-                    deltaTextEl.innerHTML = `You are <span class="text-blue font-bold">${moviesAhead}</span> movies ahead of schedule.`;
-                    deltaTextEl.className = "text-sm font-serif-lb italic text-blue/80";
-                    watchedInput.className = "lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-blue-400";
+                    deltaTextEl.innerHTML = `You are <span class="text-green font-bold">${moviesAhead}</span> movies ahead of schedule.`;
+                    deltaTextEl.className = "text-sm font-serif-lb italic text-green/80";
+                    watchedInput.className = "lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-green-400";
                 } else {
                     deltaTextEl.innerHTML = `You are perfectly on track.`;
                     deltaTextEl.className = "text-sm font-serif-lb italic text-[#677589]";
-                    watchedInput.className = "lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-green-400";
+                    watchedInput.className = "lb-input w-full p-2 rounded text-3xl font-serif-lb font-bold text-center text-blue-400";
                 }
             }
 

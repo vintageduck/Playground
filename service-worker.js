@@ -3,8 +3,12 @@ const ASSETS_TO_CACHE = [
     './',
     './index.html',
     './manifest.json',
-    // Add your widget paths here as you build them
-    // './template-widget/index.html' 
+    './polecatting.html',
+    './betterloxd.html',
+    './rating.html',
+    './ratking.svg',
+    './icons/icon-192.png',
+    './icons/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
