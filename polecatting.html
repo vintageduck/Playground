@@ -38,15 +38,18 @@
         /* --- THE RAT SVG BACKGROUND --- */
         .rat-bg {
             position: absolute;
-            top: 60%;
+            top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             width: 100vw;
             height: auto;
             max-width: 600px;
-            opacity: 0.4;
+            opacity: 0.6;
+            /* Increased opacity as the fill is now dark grey */
             z-index: 0;
             pointer-events: none;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            /* Smooth satisfying spring-like rotation */
         }
 
         /* --- NAVIGATION --- */
@@ -124,6 +127,10 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            position: relative;
+            /* Ensure relative context if needed */
+            margin-top: -40px;
+            /* Slight offset to visually center the plus button better against header/footer weight */
         }
 
         /* The Swappable Label */
@@ -577,6 +584,8 @@
         let historyMode = 'days'; // days, weeks, months, years
         let counterDisplayMode = 'today'; // 'today' or 'allTime'
 
+        let bgRotation = 0; // Track rotation
+
         // --- INIT ---
         function init() {
             document.getElementById('datePicker').value = currentDateKey;
@@ -618,6 +627,17 @@
 
             data[currentDateKey] += change;
             if (data[currentDateKey] < 0) data[currentDateKey] = 0; // No negatives
+
+            // Animate Background
+            if (change > 0) {
+                bgRotation += 72;
+            } else {
+                bgRotation -= 72;
+            }
+            const bgEl = document.querySelector('.rat-bg');
+            if (bgEl) {
+                bgEl.style.transform = `translate(-50%, -50%) rotate(${bgRotation}deg)`;
+            }
 
             saveData(data);
             renderCounter();
