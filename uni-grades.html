@@ -847,25 +847,55 @@
         // ==================== CALCULATIONS ====================
         function calcModuleStats(module) {
             if (!module.assessments || module.assessments.length === 0) {
-                return { average: 0, complete: 0, realGrade: 0 };
+                return { average: 0, complete: 0, realGrade: 0, remainingWeight: 100 };
             }
+
+            // First, get total weight (excluding zero-weight formatives)
             let totalWeight = 0;
-            let weightedSum = 0;
+            let weightedGradeSum = 0;
             let completeWeight = 0;
 
             module.assessments.forEach(a => {
+                // Skip zero-weight assessments (formatives) from calculations
+                if (a.weight === 0) return;
+
+                totalWeight += a.weight;
                 if (a.grade !== null && a.grade !== undefined) {
-                    weightedSum += a.grade * a.weight;
+                    weightedGradeSum += a.grade * a.weight;
                     completeWeight += a.weight;
                 }
-                totalWeight += a.weight;
             });
 
-            const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
-            const complete = totalWeight > 0 ? (completeWeight / totalWeight) * 100 : 0;
-            const realGrade = weightedSum; // Treating incomplete as 0%
+            // Normalize to 100% if weights exceed 100
+            const normalizationFactor = totalWeight > 100 ? 100 / totalWeight : 1;
+            const normalizedTotal = totalWeight * normalizationFactor; // Should be <= 100
+            const normalizedComplete = completeWeight * normalizationFactor;
 
-            return { average, complete, realGrade };
+            // Average is weighted average of completed assessments
+            const average = completeWeight > 0 ? weightedGradeSum / completeWeight : 0;
+
+            // Completion percentage (what % of the module is done)
+            const complete = normalizedTotal > 0 ? (normalizedComplete / normalizedTotal) * 100 : 0;
+
+            // Real grade: the contribution locked in (treating incomplete as 0)
+            // This is the weighted sum normalized as a percentage out of 100
+            const realGrade = totalWeight > 0 ? weightedGradeSum / totalWeight * 100 : 0;
+
+            // Remaining weight for smart defaults
+            const remainingWeight = Math.max(0, 100 - totalWeight);
+
+            return { average, complete, realGrade, remainingWeight };
+        }
+
+        function getRemainingWeight(module) {
+            if (!module.assessments || module.assessments.length === 0) {
+                return 100;
+            }
+            let totalWeight = 0;
+            module.assessments.forEach(a => {
+                if (a.weight > 0) totalWeight += a.weight;
+            });
+            return Math.max(0, 100 - totalWeight);
         }
 
         function calcYearStats(year) {
@@ -886,17 +916,24 @@
                 const stats = calcModuleStats(m);
                 const moduleWeight = m.weight || 0;
 
+                // Skip 0-weight modules
+                if (moduleWeight === 0) return;
+
+                totalWeight += moduleWeight;
+
                 if (stats.complete > 0) {
+                    // Contribution to average weighted by completion
                     weightedSum += stats.average * moduleWeight * (stats.complete / 100);
                     completeWeight += moduleWeight * (stats.complete / 100);
                 }
+
+                // Real grade: module's realGrade is already a percentage, weight it by module weight
                 realSum += stats.realGrade * (moduleWeight / 100);
-                totalWeight += moduleWeight;
             });
 
             const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
             const complete = totalWeight > 0 ? (completeWeight / totalWeight) * 100 : 0;
-            const realGrade = realSum;
+            const realGrade = totalWeight > 0 ? realSum / totalWeight * 100 : 0;
 
             return { average, complete, realGrade };
         }
@@ -921,27 +958,21 @@
 
                 const stats = calcYearStats(y);
                 const yearWeight = y.weight;
-                const yearContributionFactor = yearWeight / totalYearWeight; // Normalize to actual total
+                const yearFactor = yearWeight / totalYearWeight; // Normalize (e.g., 40/100 = 0.4)
 
                 if (stats.complete > 0) {
                     // Weight contribution by year weight AND completion percentage
-                    weightedSum += stats.average * yearContributionFactor * (stats.complete / 100);
-                    completeWeight += yearContributionFactor * (stats.complete / 100);
+                    weightedSum += stats.average * yearFactor * (stats.complete / 100);
+                    completeWeight += yearFactor * (stats.complete / 100);
                 }
 
-                // Real grade: what you'd get if all incomplete = 0%
-                // For complete years with fixedAverage, use the full contribution
-                // For incomplete years, use realGrade (treating missing as 0)
-                if (stats.complete === 100) {
-                    realSum += stats.average * yearContributionFactor;
-                } else {
-                    // Year not complete - calculate what's locked in
-                    realSum += stats.realGrade * yearContributionFactor / 100;
-                }
+                // Real grade: what's locked in so far
+                // Year's realGrade is already 0-100, weight it by year factor
+                realSum += stats.realGrade * yearFactor * (stats.complete / 100);
             });
 
             const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
-            const complete = completeWeight * 100;
+            const complete = completeWeight * 100; // As percentage
             const realGrade = realSum;
 
             return { average, complete, realGrade };
@@ -1267,6 +1298,11 @@
 
         function showAddAssessmentModal() {
             modalMode = 'addAssessment';
+            const mod = data.years[currentYearIndex].modules[currentModuleIndex];
+            const remainingWeight = getRemainingWeight(mod);
+            const defaultWeight = remainingWeight > 0 ? remainingWeight : 100;
+            const hint = remainingWeight <= 0 ? '<p style="color: var(--orange); font-size: 13px; margin-top: 4px;">⚠️ Weights already total 100%+. Consider adjusting existing weights.</p>' : '';
+
             document.getElementById('modal-title').textContent = 'Add Assessment';
             document.getElementById('modal-content').innerHTML = `
                 <div class="form-group">
@@ -1274,12 +1310,13 @@
                     <input type="text" class="form-input" id="input-name" placeholder="Essay 1">
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Weight (%)</label>
-                    <input type="number" class="form-input" id="input-weight" placeholder="50" value="100">
+                    <label class="form-label">Weight (%) - ${remainingWeight.toFixed(0)}% remaining</label>
+                    <input type="number" class="form-input" id="input-weight" placeholder="50" value="${defaultWeight}" step="0.1" min="0">
+                    ${hint}
                 </div>
                 <div class="form-group">
                     <label class="form-label">Grade (leave blank if not yet received)</label>
-                    <input type="number" class="form-input" id="input-grade" placeholder="72" step="0.1">
+                    <input type="number" class="form-input" id="input-grade" placeholder="72" step="0.1" min="0" max="100">
                 </div>
             `;
             showModal();
@@ -1439,6 +1476,7 @@
             } else {
                 document.body.classList.remove('skin-academic');
             }
+            updateThemeColor(skin);
             localStorage.setItem('uniGradesSkin', skin);
             showDataModal(); // Refresh to update button states
         }
@@ -1448,6 +1486,24 @@
             if (skin === 'academic') {
                 document.body.classList.add('skin-academic');
             }
+            updateThemeColor(skin);
+        }
+
+        function updateThemeColor(skin) {
+            // Update theme-color meta tags for PWA status bar
+            const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let bgColor;
+
+            if (skin === 'academic') {
+                bgColor = isDark ? '#1a1612' : '#faf8f5';
+            } else {
+                bgColor = isDark ? '#000000' : '#f2f2f7';
+            }
+
+            // Update the meta tags
+            document.querySelectorAll('meta[name="theme-color"]').forEach(tag => {
+                tag.content = bgColor;
+            });
         }
 
         function exportData() {
