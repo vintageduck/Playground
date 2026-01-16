@@ -6,15 +6,273 @@
             "credits": 120,
             "isComplete": true,
             "fixedAverage": 64.7,
-            "modules": []
+            "modules": [
+                {
+                    "name": "Sources",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "Source Commentary 1",
+                            "weight": 20,
+                            "grade": 66
+                        },
+                        {
+                            "name": "Source Commentary 2",
+                            "weight": 20,
+                            "grade": 67
+                        },
+                        {
+                            "name": "Sources Presentation",
+                            "weight": 50,
+                            "grade": 67
+                        },
+                        {
+                            "name": "Contribution",
+                            "weight": 10,
+                            "grade": 100
+                        }
+                    ]
+                },
+                {
+                    "name": "Early Modern History",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "EM Essay",
+                            "weight": 33,
+                            "grade": 72
+                        },
+                        {
+                            "name": "EM Exam",
+                            "weight": 67,
+                            "grade": 64
+                        }
+                    ]
+                },
+                {
+                    "name": "Medieval History",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "1,000 words",
+                            "weight": 33,
+                            "grade": 0
+                        },
+                        {
+                            "name": "2,000 words",
+                            "weight": 67,
+                            "grade": 57
+                        }
+                    ]
+                },
+                {
+                    "name": "Global History",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "1,500 words",
+                            "weight": 30,
+                            "grade": 62
+                        },
+                        {
+                            "name": "Unseen Exam 1",
+                            "weight": 30,
+                            "grade": 72
+                        },
+                        {
+                            "name": "Unseen Exam 2",
+                            "weight": 30,
+                            "grade": 74
+                        },
+                        {
+                            "name": "Contribution",
+                            "weight": 10,
+                            "grade": 78
+                        }
+                    ]
+                },
+                {
+                    "name": "Making of the Modern World",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "1,500 Essay 1",
+                            "weight": 50,
+                            "grade": 75
+                        },
+                        {
+                            "name": "1,500 Essay 2",
+                            "weight": 50,
+                            "grade": 72
+                        }
+                    ]
+                },
+                {
+                    "name": "Revolutions",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "2.5k Egypt",
+                            "weight": 50,
+                            "grade": 71
+                        },
+                        {
+                            "name": "Exam Q1",
+                            "weight": 25,
+                            "grade": 68
+                        },
+                        {
+                            "name": "Exam Q2",
+                            "weight": 25,
+                            "grade": 63
+                        }
+                    ]
+                },
+                {
+                    "name": "Historiography",
+                    "credits": 0,
+                    "weight": 0,
+                    "assessments": [
+                        {
+                            "name": "Critical Analysis",
+                            "weight": 33,
+                            "grade": 65
+                        },
+                        {
+                            "name": "Essay",
+                            "weight": 67,
+                            "grade": 73
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "Year 2",
             "weight": 40,
             "credits": 120,
-            "isComplete": true,
-            "fixedAverage": 69.6,
-            "modules": []
+            "isComplete": false,
+            "fixedAverage": null,
+            "modules": [
+                {
+                    "name": "Rethinking History",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "1,000 word Critical Analysis",
+                            "weight": 33,
+                            "grade": 65
+                        },
+                        {
+                            "name": "2.5k Historical Essay",
+                            "weight": 67,
+                            "grade": 64
+                        }
+                    ]
+                },
+                {
+                    "name": "Americas in Global Context",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "Formative",
+                            "weight": 0,
+                            "grade": 62
+                        },
+                        {
+                            "name": "Sumative Essay",
+                            "weight": 100,
+                            "grade": 70
+                        }
+                    ]
+                },
+                {
+                    "name": "Tudor World",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "Book Review Presentation",
+                            "weight": 25,
+                            "grade": 75
+                        },
+                        {
+                            "name": "Unseen Q1",
+                            "weight": 37.5,
+                            "grade": 67
+                        },
+                        {
+                            "name": "Unseen Q3",
+                            "weight": 37.5,
+                            "grade": 73
+                        }
+                    ]
+                },
+                {
+                    "name": "Everyday Life in Tudor & Stuart England",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "3.5K Essay",
+                            "weight": 50,
+                            "grade": 74
+                        },
+                        {
+                            "name": "Timed Assessment",
+                            "weight": 50,
+                            "grade": null
+                        }
+                    ]
+                },
+                {
+                    "name": "The Making of Contemporary Britain",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "Podcast (Formative)",
+                            "weight": 0,
+                            "grade": 100
+                        },
+                        {
+                            "name": "2.5K Essay",
+                            "weight": 50,
+                            "grade": 76
+                        },
+                        {
+                            "name": "Unseen",
+                            "weight": 50,
+                            "grade": null
+                        }
+                    ]
+                },
+                {
+                    "name": "Politics of the Past",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": [
+                        {
+                            "name": "Presentation",
+                            "weight": 50,
+                            "grade": 67
+                        },
+                        {
+                            "name": "2k Essay",
+                            "weight": 50,
+                            "grade": null
+                        }
+                    ]
+                }
+            ]
         },
         {
             "name": "Year 3",
