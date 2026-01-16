@@ -850,14 +850,13 @@
                 return { average: 0, complete: 0, realGrade: 0, remainingWeight: 100 };
             }
 
-            // First, get total weight (excluding zero-weight formatives)
+            // Get total weight (excluding zero-weight formatives)
             let totalWeight = 0;
             let weightedGradeSum = 0;
             let completeWeight = 0;
 
             module.assessments.forEach(a => {
-                // Skip zero-weight assessments (formatives) from calculations
-                if (a.weight === 0) return;
+                if (a.weight === 0) return; // Skip formatives
 
                 totalWeight += a.weight;
                 if (a.grade !== null && a.grade !== undefined) {
@@ -866,22 +865,18 @@
                 }
             });
 
-            // Normalize to 100% if weights exceed 100
-            const normalizationFactor = totalWeight > 100 ? 100 / totalWeight : 1;
-            const normalizedTotal = totalWeight * normalizationFactor; // Should be <= 100
-            const normalizedComplete = completeWeight * normalizationFactor;
-
-            // Average is weighted average of completed assessments
+            // Average of completed work
             const average = completeWeight > 0 ? weightedGradeSum / completeWeight : 0;
 
-            // Completion percentage (what % of the module is done)
-            const complete = normalizedTotal > 0 ? (normalizedComplete / normalizedTotal) * 100 : 0;
+            // Completion percentage
+            const complete = totalWeight > 0 ? (completeWeight / totalWeight) * 100 : 0;
 
-            // Real grade: the contribution locked in (treating incomplete as 0)
-            // This is the weighted sum normalized as a percentage out of 100
-            const realGrade = totalWeight > 0 ? weightedGradeSum / totalWeight * 100 : 0;
+            // Real grade: what you'd get if remaining = 0
+            // weightedGradeSum is (grade * weight) e.g. 72 * 50 = 3600
+            // Normalized to 100: 3600 / 100 = 36 (out of 100)
+            // If weights > 100, normalize: 3600 / totalWeight = grade contribution
+            const realGrade = totalWeight > 0 ? weightedGradeSum / Math.max(totalWeight, 100) : 0;
 
-            // Remaining weight for smart defaults
             const remainingWeight = Math.max(0, 100 - totalWeight);
 
             return { average, complete, realGrade, remainingWeight };
@@ -915,31 +910,28 @@
             year.modules.forEach(m => {
                 const stats = calcModuleStats(m);
                 const moduleWeight = m.weight || 0;
-
-                // Skip 0-weight modules
                 if (moduleWeight === 0) return;
 
                 totalWeight += moduleWeight;
 
                 if (stats.complete > 0) {
-                    // Contribution to average weighted by completion
                     weightedSum += stats.average * moduleWeight * (stats.complete / 100);
                     completeWeight += moduleWeight * (stats.complete / 100);
                 }
 
-                // Real grade: module's realGrade is already a percentage, weight it by module weight
-                realSum += stats.realGrade * (moduleWeight / 100);
+                // realGrade from module is 0-100 scale, weight by module proportion
+                realSum += stats.realGrade * moduleWeight;
             });
 
             const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
             const complete = totalWeight > 0 ? (completeWeight / totalWeight) * 100 : 0;
-            const realGrade = totalWeight > 0 ? realSum / totalWeight * 100 : 0;
+            // Normalize realSum by total weight to get year's real grade (0-100)
+            const realGrade = totalWeight > 0 ? realSum / totalWeight : 0;
 
             return { average, complete, realGrade };
         }
 
         function calcOverallStats() {
-            // Sum up all year weights (excluding 0-weight years)
             let totalYearWeight = 0;
             data.years.forEach(y => {
                 if (y.weight > 0) totalYearWeight += y.weight;
@@ -954,26 +946,24 @@
             let realSum = 0;
 
             data.years.forEach(y => {
-                if (y.weight === 0) return; // 0-weight years don't count
+                if (y.weight === 0) return;
 
                 const stats = calcYearStats(y);
                 const yearWeight = y.weight;
-                const yearFactor = yearWeight / totalYearWeight; // Normalize (e.g., 40/100 = 0.4)
 
                 if (stats.complete > 0) {
-                    // Weight contribution by year weight AND completion percentage
-                    weightedSum += stats.average * yearFactor * (stats.complete / 100);
-                    completeWeight += yearFactor * (stats.complete / 100);
+                    weightedSum += stats.average * yearWeight * (stats.complete / 100);
+                    completeWeight += yearWeight * (stats.complete / 100);
                 }
 
-                // Real grade: what's locked in so far
-                // Year's realGrade is already 0-100, weight it by year factor
-                realSum += stats.realGrade * yearFactor * (stats.complete / 100);
+                // realGrade from year is 0-100, weight by year proportion
+                realSum += stats.realGrade * yearWeight * (stats.complete / 100);
             });
 
             const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
-            const complete = completeWeight * 100; // As percentage
-            const realGrade = realSum;
+            const complete = totalYearWeight > 0 ? (completeWeight / totalYearWeight) * 100 : 0;
+            // realSum is weighted, normalize by total weight
+            const realGrade = totalYearWeight > 0 ? realSum / totalYearWeight : 0;
 
             return { average, complete, realGrade };
         }
