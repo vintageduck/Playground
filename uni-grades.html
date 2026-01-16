@@ -1393,9 +1393,10 @@
                 showModuleView(currentModuleIndex);
             } else if (modalMode === 'addAssessment') {
                 const gradeVal = document.getElementById('input-grade').value;
+                const weightVal = document.getElementById('input-weight').value;
                 data.years[currentYearIndex].modules[currentModuleIndex].assessments.push({
                     name: document.getElementById('input-name').value,
-                    weight: parseFloat(document.getElementById('input-weight').value) || 100,
+                    weight: weightVal !== '' ? parseFloat(weightVal) : 50,
                     grade: gradeVal ? parseFloat(gradeVal) : null
                 });
                 saveData();
@@ -1403,8 +1404,9 @@
             } else if (modalMode === 'editAssessment') {
                 const a = data.years[currentYearIndex].modules[currentModuleIndex].assessments[editIndex];
                 const gradeVal = document.getElementById('input-grade').value;
+                const weightVal = document.getElementById('input-weight').value;
                 a.name = document.getElementById('input-name').value;
-                a.weight = parseFloat(document.getElementById('input-weight').value) || 100;
+                a.weight = weightVal !== '' ? parseFloat(weightVal) : a.weight;
                 a.grade = gradeVal ? parseFloat(gradeVal) : null;
                 saveData();
                 showModuleView(currentModuleIndex);
