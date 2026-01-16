@@ -18,6 +18,7 @@
 
     <style>
         :root {
+            /* Default: Modern skin */
             --bg-body: #f2f2f7;
             --bg-card: #ffffff;
             --bg-card-secondary: #e5e5ea;
@@ -25,13 +26,25 @@
             --text-sub: #8e8e93;
             --separator: #c6c6c8;
             --accent: #007aff;
+            --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+
+            /* Grade classification colors */
+            --grade-first: #34c759;
+            /* Green - First (70%+) */
+            --grade-21: #007aff;
+            /* Blue - 2:1 (60-69%) */
+            --grade-22: #ff9500;
+            /* Orange - 2:2 (50-59%) */
+            --grade-third: #ff3b30;
+            /* Red - Third/Fail (<50%) */
+
+            /* Standard colors */
             --green: #34c759;
             --red: #ff3b30;
             --orange: #ff9500;
             --yellow: #ffcc00;
             --blue: #007aff;
-            --font-serif: "New York", "Times New Roman", Times, serif;
-            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
         }
 
         @media (prefers-color-scheme: dark) {
@@ -45,6 +58,31 @@
             }
         }
 
+        /* Academic Skin */
+        .skin-academic {
+            --bg-body: #faf8f5;
+            --bg-card: #fffef9;
+            --bg-card-secondary: #f0ede6;
+            --text-main: #2c2416;
+            --text-sub: #6b5d4d;
+            --separator: #d4cfc4;
+            --accent: #8b4513;
+            --font-body: "New York", Georgia, "Times New Roman", serif;
+            --font-heading: "New York", Georgia, "Times New Roman", serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .skin-academic {
+                --bg-body: #1a1612;
+                --bg-card: #252018;
+                --bg-card-secondary: #332b20;
+                --text-main: #e8e0d4;
+                --text-sub: #a09080;
+                --separator: #4a4030;
+                --accent: #d4a574;
+            }
+        }
+
         * {
             box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
@@ -53,13 +91,21 @@
         body {
             margin: 0;
             padding: 0;
-            font-family: var(--font-sans);
+            font-family: var(--font-body);
             background-color: var(--bg-body);
             color: var(--text-main);
             padding-top: env(safe-area-inset-top);
             padding-bottom: env(safe-area-inset-bottom);
             -webkit-font-smoothing: antialiased;
             min-height: 100vh;
+        }
+
+        h1,
+        h2,
+        h3,
+        .section-title,
+        .page-title {
+            font-family: var(--font-heading);
         }
 
         /* --- NAVIGATION --- */
@@ -444,12 +490,13 @@
             bottom: 0;
             background: rgba(0, 0, 0, 0.5);
             display: flex;
-            align-items: flex-end;
+            align-items: center;
             justify-content: center;
             z-index: 1000;
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.2s;
+            padding: 20px;
         }
 
         .modal-overlay.active {
@@ -459,17 +506,18 @@
 
         .modal {
             background: var(--bg-card);
-            border-radius: 12px 12px 0 0;
+            border-radius: 12px;
             width: 100%;
-            max-width: 500px;
+            max-width: 400px;
+            max-height: calc(100vh - 100px);
+            overflow-y: auto;
             padding: 20px;
-            padding-bottom: calc(20px + env(safe-area-inset-bottom));
-            transform: translateY(100%);
-            transition: transform 0.3s ease;
+            transform: scale(0.9);
+            transition: transform 0.2s ease;
         }
 
         .modal-overlay.active .modal {
-            transform: translateY(0);
+            transform: scale(1);
         }
 
         .modal-header {
@@ -568,7 +616,13 @@
                 Home
             </a>
             <span class="nav-title">Overall</span>
-            <button class="nav-action" onclick="showDataModal()">⚙️</button>
+            <button class="nav-action" onclick="showDataModal()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="3" />
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+            </button>
         </nav>
 
         <h1 class="page-title">Overall</h1>
@@ -773,6 +827,7 @@
 
         // ==================== INITIALIZATION ====================
         function init() {
+            loadSkin();
             loadData();
             renderOverallView();
         }
@@ -903,11 +958,42 @@
             return needed;
         }
 
+        // ==================== GRADE COLOR ====================
+        function getGradeColor(grade) {
+            if (grade >= 70) return 'var(--grade-first)';
+            if (grade >= 60) return 'var(--grade-21)';
+            if (grade >= 50) return 'var(--grade-22)';
+            return 'var(--grade-third)';
+        }
+
+        function getGradeClass(grade) {
+            if (grade >= 70) return 'grade-first';
+            if (grade >= 60) return 'grade-21';
+            if (grade >= 50) return 'grade-22';
+            return 'grade-third';
+        }
+
+        // ==================== SVG ICONS ====================
+        const ICONS = {
+            average: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>',
+            complete: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10" stroke-linecap="round"/></svg>',
+            bolt: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>',
+            credits: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>',
+            weight: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>',
+            settings: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+            download: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
+            upload: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>',
+            trash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
+            plus: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10" fill="var(--accent)"/><path d="M12 7v10M7 12h10" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>'
+        };
+
         // ==================== RING PROGRESS ====================
-        function createRing(percent, size = 56) {
+        function createRing(percent, yearNum = null, size = 56, gradeForColor = null) {
             const radius = (size - 8) / 2;
             const circumference = 2 * Math.PI * radius;
             const offset = circumference - (percent / 100) * circumference;
+            const strokeColor = gradeForColor !== null ? getGradeColor(gradeForColor) : 'var(--green)';
+            const displayText = yearNum !== null ? yearNum : Math.round(percent);
 
             return `
                 <div class="ring-container" style="width: ${size}px; height: ${size}px;">
@@ -915,9 +1001,10 @@
                         <circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${radius}"/>
                         <circle class="ring-fill" cx="${size / 2}" cy="${size / 2}" r="${radius}"
                             stroke-dasharray="${circumference}" 
-                            stroke-dashoffset="${offset}"/>
+                            stroke-dashoffset="${offset}"
+                            style="stroke: ${strokeColor}"/>
                     </svg>
-                    <span class="ring-text">${Math.round(percent)}</span>
+                    <span class="ring-text">${displayText}</span>
                 </div>
             `;
         }
@@ -925,8 +1012,10 @@
         // ==================== RENDER FUNCTIONS ====================
         function renderOverallView() {
             const stats = calcOverallStats();
+            const gradeColor = getGradeColor(stats.average);
 
             document.getElementById('overall-progress-fill').style.width = `${stats.complete}%`;
+            document.getElementById('overall-progress-fill').style.background = gradeColor;
             document.getElementById('overall-average').textContent = `${stats.average.toFixed(1)}%`;
             document.getElementById('overall-complete').textContent = `${stats.complete.toFixed(1)}%`;
             document.getElementById('overall-real').textContent = `${stats.realGrade.toFixed(1)}%`;
@@ -959,16 +1048,17 @@
             const yearsList = document.getElementById('years-list');
             yearsList.innerHTML = data.years.map((year, i) => {
                 const stats = calcYearStats(year);
+                const yearNum = i + 1;
                 return `
                     <div class="card" onclick="showYearView(${i})">
-                        ${createRing(stats.complete)}
+                        ${createRing(stats.complete, yearNum, 56, stats.average)}
                         <div class="card-content">
-                            <div class="card-title">${stats.average.toFixed(1)}%</div>
+                            <div class="card-title" style="color: ${getGradeColor(stats.average)}">${stats.average.toFixed(1)}%</div>
                             <div class="card-subtitle">Average</div>
                         </div>
                         <div class="card-stats">
-                            <div class="card-stat-row">${year.credits} ⚖</div>
-                            <div class="card-stat-row">${year.weight}% 🔒</div>
+                            <div class="card-stat-row">${year.credits} ${ICONS.credits}</div>
+                            <div class="card-stat-row">${year.weight}% ${ICONS.weight}</div>
                         </div>
                         <div class="card-arrow">
                             <svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -1072,6 +1162,8 @@
 
         // ==================== MODALS ====================
         function showModal() {
+            // Reset save button visibility (data modal hides it)
+            document.getElementById('modal-save').style.display = 'block';
             document.getElementById('modal-overlay').classList.add('active');
         }
 
@@ -1305,28 +1397,57 @@
         // ==================== DATA IMPORT/EXPORT ====================
         function showDataModal() {
             modalMode = 'data';
-            document.getElementById('modal-title').textContent = 'Data';
+            document.getElementById('modal-title').textContent = 'Settings';
             document.getElementById('modal-save').style.display = 'none';
+            const currentSkin = document.body.classList.contains('skin-academic') ? 'academic' : 'modern';
             document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Theme</label>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="add-button" style="flex: 1; background: ${currentSkin === 'modern' ? 'var(--accent)' : 'var(--bg-card-secondary)'}; color: ${currentSkin === 'modern' ? 'white' : 'var(--text-main)'}; border-radius: 8px; margin: 0;" onclick="setSkin('modern')">
+                            Modern
+                        </button>
+                        <button class="add-button" style="flex: 1; background: ${currentSkin === 'academic' ? 'var(--accent)' : 'var(--bg-card-secondary)'}; color: ${currentSkin === 'academic' ? 'white' : 'var(--text-main)'}; border-radius: 8px; margin: 0; font-family: Georgia, serif;" onclick="setSkin('academic')">
+                            Academic
+                        </button>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">Export Data</label>
                     <button class="add-button" style="background: var(--bg-card-secondary); border-radius: 8px; margin: 0;" onclick="exportData()">
-                        📤 Download JSON
+                        ${ICONS.download} Download JSON
                     </button>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Import Data (paste JSON below)</label>
-                    <textarea id="import-json" class="form-input" style="height: 150px; font-family: monospace; font-size: 12px;" placeholder='{"years": [...], "goals": [...]}'></textarea>
+                    <textarea id="import-json" class="form-input" style="height: 120px; font-family: monospace; font-size: 12px;" placeholder='{"years": [...], "goals": [...]}'></textarea>
                     <button class="add-button" style="background: var(--accent); color: white; border-radius: 8px; margin-top: 8px;" onclick="importData()">
-                        📥 Import JSON
+                        ${ICONS.upload} Import JSON
                     </button>
                 </div>
                 <div class="form-group">
                     <label class="form-label">Danger Zone</label>
-                    <button class="delete-btn" onclick="resetData()">🗑️ Reset All Data</button>
+                    <button class="delete-btn" onclick="resetData()">${ICONS.trash} Reset All Data</button>
                 </div>
             `;
             showModal();
+        }
+
+        function setSkin(skin) {
+            if (skin === 'academic') {
+                document.body.classList.add('skin-academic');
+            } else {
+                document.body.classList.remove('skin-academic');
+            }
+            localStorage.setItem('uniGradesSkin', skin);
+            showDataModal(); // Refresh to update button states
+        }
+
+        function loadSkin() {
+            const skin = localStorage.getItem('uniGradesSkin') || 'modern';
+            if (skin === 'academic') {
+                document.body.classList.add('skin-academic');
+            }
         }
 
         function exportData() {
