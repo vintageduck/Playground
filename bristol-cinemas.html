@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#14181c">
+    <title>Bristol Cinema Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f1115;
+            --card-bg: #1a1e26;
+            --accent: #FF3B30;
+            /* Cinema Red */
+            --text-main: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Outfit', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .cinema-card {
+            background-color: var(--card-bg);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cinema-card:active {
+            transform: scale(0.98);
+        }
+
+        .distance-badge {
+            background: rgba(255, 59, 48, 0.1);
+            color: var(--accent);
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen p-6 pb-24 max-w-lg mx-auto relative">
+
+    <!-- Header -->
+    <header class="mb-8 flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight text-white mb-1">Cinema Tracker</h1>
+            <p class="text-sm text-slate-400">Bristol • Within Walking Distance</p>
+        </div>
+        <div class="h-10 w-10 rounded-full bg-[#1a1e26] flex items-center justify-center text-xl">
+            🍿
+        </div>
+    </header>
+
+    <!-- Filters -->
+    <div class="flex gap-3 mb-6 overflow-x-auto scrollbar-hide">
+        <button class="px-4 py-2 rounded-full bg-white text-black text-xs font-bold whitespace-nowrap">All
+            Cinemas</button>
+        <button class="px-4 py-2 rounded-full bg-[#1a1e26] text-slate-400 text-xs font-bold whitespace-nowrap">
+            < 20 min walk</button>
+                <button
+                    class="px-4 py-2 rounded-full bg-[#1a1e26] text-slate-400 text-xs font-bold whitespace-nowrap">Cheapest</button>
+    </div>
+
+    <!-- Cinema List -->
+    <div id="cinema-list" class="space-y-4">
+        <!-- Loading State -->
+        <div class="animate-pulse space-y-4">
+            <div class="h-24 bg-[#1a1e26] rounded-xl"></div>
+            <div class="h-24 bg-[#1a1e26] rounded-xl"></div>
+            <div class="h-24 bg-[#1a1e26] rounded-xl"></div>
+        </div>
+    </div>
+
+    <!-- Template for Cinema Card -->
+    <template id="cinema-card-template">
+        <div class="cinema-card rounded-2xl p-5 border border-white/5 relative overflow-hidden group">
+            <div class="flex justify-between items-start mb-3">
+                <div>
+                    <h3 class="text-lg font-bold text-white leading-tight cinema-name">Cinema Name</h3>
+                    <p class="text-xs text-slate-500 mt-1 cinema-address">Address Line</p>
+                </div>
+                <span class="text-xs font-bold px-2 py-1 rounded-md distance-badge cinema-distance">0.0m</span>
+            </div>
+
+            <!-- Shows Container -->
+            <div class="space-y-3 mt-4 shows-container">
+                <!-- Shows injected here -->
+                <div class="text-sm text-slate-500 italic no-data-msg hidden">Run update_cinemas.py to fetch showtimes
+                </div>
+            </div>
+
+            <!-- Action -->
+            <div class="mt-4 pt-4 border-t border-white/5 flex justify-between items-center">
+                <span class="text-xs text-slate-400 last-updated">Updated: Never</span>
+                <a href="#" target="_blank"
+                    class="text-xs font-bold text-white bg-white/10 px-3 py-1.5 rounded-lg hover:bg-white hover:text-black transition-colors cinema-link">
+                    Book Ticket ↗
+                </a>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        const MAX_WALK_DISTANCE_MILES = 1.5;
+
+        async function loadData() {
+            try {
+                const response = await fetch('cinemas.json');
+                if (!response.ok) throw new Error("Failed to load data");
+                const data = await response.json();
+                render(data);
+            } catch (error) {
+                console.error(error);
+                document.getElementById('cinema-list').innerHTML = `<div class="text-center text-red-500 mt-10">Failed to load cinema data. <br>Ensure cinemas.json exists.</div>`;
+            }
+        }
+
+        function haversineDistance(coords1, coords2) {
+            function toRad(x) {
+                return x * Math.PI / 180;
+            }
+
+            var lon1 = coords1.lng;
+            var lat1 = coords1.lat;
+
+            var lon2 = coords2.lng;
+            var lat2 = coords2.lat;
+
+            var R = 6371; // km
+
+            var x1 = lat2 - lat1;
+            var dLat = toRad(x1);
+            var x2 = lon2 - lon1;
+            var dLon = toRad(x2);
+            var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            var d = R * c;
+
+            // Convert to miles
+            return d * 0.621371;
+        }
+
+        function render(data) {
+            const list = document.getElementById('cinema-list');
+            const template = document.getElementById('cinema-card-template');
+            list.innerHTML = '';
+
+            const cliftonCoords = data.clifton_down_coords;
+
+            // Sort by distance
+            const cinemas = data.cinemas.map(c => {
+                c.distance = haversineDistance(cliftonCoords, c.coords);
+                return c;
+            }).filter(c => c.distance <= MAX_WALK_DISTANCE_MILES).sort((a, b) => a.distance - b.distance);
+
+            if (cinemas.length === 0) {
+                list.innerHTML = `<div class="text-center text-slate-500 mt-10">No cinemas found within walking distance (${MAX_WALK_DISTANCE_MILES} miles).</div>`;
+                return;
+            }
+
+            cinemas.forEach(cinema => {
+                const clone = template.content.cloneNode(true);
+
+                clone.querySelector('.cinema-name').textContent = cinema.name;
+                clone.querySelector('.cinema-address').textContent = cinema.address;
+                clone.querySelector('.cinema-distance').textContent = cinema.distance.toFixed(1) + ' mi';
+                clone.querySelector('.cinema-link').href = cinema.url;
+
+                const container = clone.querySelector('.shows-container');
+                container.innerHTML = ''; // Clear default content
+
+                if (cinema.showtimes && cinema.showtimes.length > 0) {
+                    // Sort alphabetically
+                    const sorted = cinema.showtimes.sort((a,b) => a.title.localeCompare(b.title));
+                    
+                    // Make container scrollable
+                    container.className = "space-y-2 mt-4 max-h-96 overflow-y-auto pr-2 scrollbar-thin";
+
+                    sorted.forEach(show => {
+                        const row = document.createElement('div');
+                        row.className = "bg-white/5 p-3 rounded-lg border border-white/5 flex flex-col items-start hover:border-white/10 transition-colors";
+                        
+                        let content = `<span class="font-bold text-white text-sm block mb-1">${show.title}</span>`;
+                        
+                        if (show.times && show.times.length > 0) {
+                             content += `<div class="flex gap-2 flex-wrap">
+                                ${show.times.map(t => `<span class="bg-[#FF3B30] text-white text-[10px] px-2 py-0.5 rounded font-bold">${t}</span>`).join('')}
+                             </div>`;
+                        } else if (show.link) {
+                             content += `<a href="${show.link}" target="_blank" class="mt-1 text-[11px] font-bold text-[#FF3B30] hover:text-white transition-colors flex items-center gap-1">
+                                View Times & Book <span class="text-[10px]">↗</span>
+                             </a>`;
+                        }
+                        
+                        row.innerHTML = content;
+                        container.appendChild(row);
+                    });
+
+                } else {
+                     container.innerHTML = `<div class="text-sm text-slate-500 italic p-2">No specific listings found. Please check the website directly.</div>`;
+                }
+
+                // Update "Last Updated" text if available
+                if (cinema.last_updated) {
+                     const date = new Date(cinema.last_updated);
+                     clone.querySelector('.last-updated').textContent = `Updated: ${date.toLocaleDateString()} ${date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                }
+
+                list.appendChild(clone);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadData);
+    </script>
+</body>
+
+</html>

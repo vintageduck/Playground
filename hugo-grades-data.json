@@ -1,0 +1,75 @@
+{
+    "years": [
+        {
+            "name": "Year 1",
+            "weight": 0,
+            "credits": 120,
+            "isComplete": true,
+            "fixedAverage": 64.7,
+            "modules": []
+        },
+        {
+            "name": "Year 2",
+            "weight": 40,
+            "credits": 120,
+            "isComplete": true,
+            "fixedAverage": 69.6,
+            "modules": []
+        },
+        {
+            "name": "Year 3",
+            "weight": 60,
+            "credits": 120,
+            "isComplete": false,
+            "fixedAverage": null,
+            "modules": [
+                {
+                    "name": "Dissertation",
+                    "credits": 40,
+                    "weight": 33.3,
+                    "assessments": []
+                },
+                {
+                    "name": "Histories of the Polar Regions",
+                    "credits": 40,
+                    "weight": 33.3,
+                    "assessments": []
+                },
+                {
+                    "name": "Horrible Histories and All That",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": []
+                },
+                {
+                    "name": "Sustainability",
+                    "credits": 20,
+                    "weight": 16.7,
+                    "assessments": []
+                }
+            ]
+        }
+    ],
+    "goals": [
+        {
+            "name": "72%",
+            "target": 72
+        },
+        {
+            "name": "First (70%)",
+            "target": 70
+        },
+        {
+            "name": "2:1 (60%)",
+            "target": 60
+        },
+        {
+            "name": "2:2 (50%)",
+            "target": 50
+        },
+        {
+            "name": "Third (40%)",
+            "target": 40
+        }
+    ]
+}

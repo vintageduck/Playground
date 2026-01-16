@@ -1,0 +1,310 @@
+{
+    "clifton_down_coords": {
+        "lat": 51.4646,
+        "lng": -2.6109
+    },
+    "cinemas": [
+        {
+            "name": "Everyman Bristol",
+            "url": "https://www.everymancinema.com/venues-list/x0x3q-everyman-bristol/",
+            "coords": {
+                "lat": 51.4628,
+                "lng": -2.6071
+            },
+            "address": "Whiteladies Rd, Clifton, Bristol BS8 2NH",
+            "showtimes": [
+                {
+                    "title": "Zootopia 2",
+                    "link": "https://www.everymancinema.com/film-listing/277428-zootopia-2/",
+                    "times": []
+                },
+                {
+                    "title": "A Big Bold Beautiful Journey",
+                    "link": "https://www.everymancinema.com/film-listing/326583-a-big-bold-beautiful-journey/",
+                    "times": []
+                },
+                {
+                    "title": "National Theatre Live The Fifth Step",
+                    "link": "https://www.everymancinema.com/film-listing/1000026569-national-theatre-live-the-fifth-step/",
+                    "times": []
+                },
+                {
+                    "title": "Ella Mccay",
+                    "link": "https://www.everymancinema.com/film-listing/323852-ella-mccay/",
+                    "times": []
+                },
+                {
+                    "title": "Deeper Into Movies A Passage Into England Live Qanda",
+                    "link": "https://www.everymancinema.com/film-listing/1000028403-deeper-into-movies-a-passage-into-england-live-qanda/",
+                    "times": []
+                },
+                {
+                    "title": "Metropolis",
+                    "link": "https://www.everymancinema.com/film-listing/240-metropolis/",
+                    "times": []
+                },
+                {
+                    "title": "Thelma And Louise",
+                    "link": "https://www.everymancinema.com/film-listing/6787-thelma-and-louise/",
+                    "times": []
+                },
+                {
+                    "title": "Wuthering Heights",
+                    "link": "https://www.everymancinema.com/film-listing/1000007235-wuthering-heights/",
+                    "times": []
+                },
+                {
+                    "title": "The Elephant Man",
+                    "link": "https://www.everymancinema.com/film-listing/180-the-elephant-man/",
+                    "times": []
+                },
+                {
+                    "title": "The Roses",
+                    "link": "https://www.everymancinema.com/film-listing/1000000405-the-roses/",
+                    "times": []
+                },
+                {
+                    "title": "The Smashing Machine",
+                    "link": "https://www.everymancinema.com/film-listing/278666-the-smashing-machine/",
+                    "times": []
+                },
+                {
+                    "title": "The Spongebob Movie Search For Squarepants",
+                    "link": "https://www.everymancinema.com/film-listing/293331-the-spongebob-movie-search-for-squarepants/",
+                    "times": []
+                },
+                {
+                    "title": "Wicked For Good",
+                    "link": "https://www.everymancinema.com/film-listing/303957-wicked-for-good/",
+                    "times": []
+                },
+                {
+                    "title": "Met Opera 2025 26 I Puritani",
+                    "link": "https://www.everymancinema.com/film-listing/1000021609-met-opera-2025-26-i-puritani/",
+                    "times": []
+                },
+                {
+                    "title": "Members Preview Nuremberg",
+                    "link": "https://www.everymancinema.com/film-listing/1000033032-members-preview-nuremberg/",
+                    "times": []
+                },
+                {
+                    "title": "The Thursday Murder Club",
+                    "link": "https://www.everymancinema.com/film-listing/1000001574-the-thursday-murder-club/",
+                    "times": []
+                },
+                {
+                    "title": "Scream 7",
+                    "link": "https://www.everymancinema.com/film-listing/318865-scream-7/",
+                    "times": []
+                },
+                {
+                    "title": "I Swear",
+                    "link": "https://www.everymancinema.com/film-listing/1000009982-i-swear/",
+                    "times": []
+                },
+                {
+                    "title": "One Battle After Another",
+                    "link": "https://www.everymancinema.com/film-listing/311364-one-battle-after-another/",
+                    "times": []
+                },
+                {
+                    "title": "Members Preview Eternity",
+                    "link": "https://www.everymancinema.com/film-listing/1000034203-members-preview-eternity/",
+                    "times": []
+                },
+                {
+                    "title": "Avatar Fire And Ash",
+                    "link": "https://www.everymancinema.com/film-listing/187247-avatar-fire-and-ash/",
+                    "times": []
+                },
+                {
+                    "title": "Blade Runner",
+                    "link": "https://www.everymancinema.com/film-listing/1975-blade-runner/",
+                    "times": []
+                },
+                {
+                    "title": "One Flew Over The Cuckoos Nest",
+                    "link": "https://www.everymancinema.com/film-listing/2072-one-flew-over-the-cuckoos-nest/",
+                    "times": []
+                },
+                {
+                    "title": "2001 A Space Odyssey",
+                    "link": "https://www.everymancinema.com/film-listing/27442-2001-a-space-odyssey/",
+                    "times": []
+                },
+                {
+                    "title": "Breathless",
+                    "link": "https://www.everymancinema.com/film-listing/29-breathless/",
+                    "times": []
+                },
+                {
+                    "title": "The Conjuring Last Rites",
+                    "link": "https://www.everymancinema.com/film-listing/309613-the-conjuring-last-rites/",
+                    "times": []
+                },
+                {
+                    "title": "Wake Up Dead Man A Knives Out Mystery",
+                    "link": "https://www.everymancinema.com/film-listing/291744-wake-up-dead-man-a-knives-out-mystery/",
+                    "times": []
+                },
+                {
+                    "title": "Hamnet",
+                    "link": "https://www.everymancinema.com/film-listing/315003-hamnet/",
+                    "times": []
+                },
+                {
+                    "title": "Branch Selects Stop Making Sense",
+                    "link": "https://www.everymancinema.com/film-listing/1000030397-branch-selects-stop-making-sense/",
+                    "times": []
+                },
+                {
+                    "title": "Marty Supreme",
+                    "link": "https://www.everymancinema.com/film-listing/1000007317-marty-supreme/",
+                    "times": []
+                },
+                {
+                    "title": "Materialists",
+                    "link": "https://www.everymancinema.com/film-listing/326585-materialists/",
+                    "times": []
+                },
+                {
+                    "title": "Springsteen Deliver Me From Nowhere",
+                    "link": "https://www.everymancinema.com/film-listing/1000000149-springsteen-deliver-me-from-nowhere/",
+                    "times": []
+                },
+                {
+                    "title": "Little Miss Sunshine",
+                    "link": "https://www.everymancinema.com/film-listing/109815-little-miss-sunshine/",
+                    "times": []
+                },
+                {
+                    "title": "The Running Man",
+                    "link": "https://www.everymancinema.com/film-listing/290564-the-running-man/",
+                    "times": []
+                },
+                {
+                    "title": "A One And A Two Yi Yi",
+                    "link": "https://www.everymancinema.com/film-listing/25300-a-one-and-a-two-yi-yi/",
+                    "times": []
+                },
+                {
+                    "title": "The Housemaid",
+                    "link": "https://www.everymancinema.com/film-listing/317403-the-housemaid/",
+                    "times": []
+                },
+                {
+                    "title": "The Iron Giant",
+                    "link": "https://www.everymancinema.com/film-listing/21709-the-iron-giant/",
+                    "times": []
+                },
+                {
+                    "title": "Now You See Me Now You Dont",
+                    "link": "https://www.everymancinema.com/film-listing/238073-now-you-see-me-now-you-dont/",
+                    "times": []
+                },
+                {
+                    "title": "Showgirls",
+                    "link": "https://www.everymancinema.com/film-listing/13804-showgirls/",
+                    "times": []
+                },
+                {
+                    "title": "The Conversation",
+                    "link": "https://www.everymancinema.com/film-listing/9955-the-conversation/",
+                    "times": []
+                },
+                {
+                    "title": "National Theatre Live Mrs Warrens Profession",
+                    "link": "https://www.everymancinema.com/film-listing/1000026567-national-theatre-live-mrs-warrens-profession/",
+                    "times": []
+                },
+                {
+                    "title": "Casino",
+                    "link": "https://www.everymancinema.com/film-listing/14178-casino/",
+                    "times": []
+                },
+                {
+                    "title": "Bugonia",
+                    "link": "https://www.everymancinema.com/film-listing/282613-bugonia/",
+                    "times": []
+                },
+                {
+                    "title": "The Godfather Part Ii",
+                    "link": "https://www.everymancinema.com/film-listing/28201-the-godfather-part-ii/",
+                    "times": []
+                },
+                {
+                    "title": "The Fangirl Nation Presents The Twilight Saga",
+                    "link": "https://www.everymancinema.com/film-listing/1000034825-the-fangirl-nation-presents-the-twilight-saga/",
+                    "times": []
+                },
+                {
+                    "title": "The Great Escape",
+                    "link": "https://www.everymancinema.com/film-listing/38827-the-great-escape/",
+                    "times": []
+                },
+                {
+                    "title": "28 Years Later The Bone Temple",
+                    "link": "https://www.everymancinema.com/film-listing/1000000966-28-years-later-the-bone-temple/",
+                    "times": []
+                },
+                {
+                    "title": "Good Fortune",
+                    "link": "https://www.everymancinema.com/film-listing/315449-good-fortune/",
+                    "times": []
+                },
+                {
+                    "title": "Taxi Driver",
+                    "link": "https://www.everymancinema.com/film-listing/308-taxi-driver/",
+                    "times": []
+                },
+                {
+                    "title": "Regretting You",
+                    "link": "https://www.everymancinema.com/film-listing/1000009067-regretting-you/",
+                    "times": []
+                },
+                {
+                    "title": "Who Framed Roger Rabbit",
+                    "link": "https://www.everymancinema.com/film-listing/4066-who-framed-roger-rabbit/",
+                    "times": []
+                },
+                {
+                    "title": "28 Years Later",
+                    "link": "https://www.everymancinema.com/film-listing/139772-28-years-later/",
+                    "times": []
+                }
+            ],
+            "last_updated": "2026-01-11T23:37:47.082001"
+        },
+        {
+            "name": "The Orpheus Cinema",
+            "url": "https://bristol.scottcinemas.co.uk/",
+            "coords": {
+                "lat": 51.4795,
+                "lng": -2.6186
+            },
+            "address": "Northumbria Dr, Henleaze, Bristol BS9 4HN",
+            "showtimes": []
+        },
+        {
+            "name": "Watershed",
+            "url": "https://www.watershed.co.uk/",
+            "coords": {
+                "lat": 51.4513,
+                "lng": -2.5985
+            },
+            "address": "1 Canon's Rd, Bristol BS1 5TX",
+            "showtimes": []
+        },
+        {
+            "name": "Cube Microplex",
+            "url": "https://cubecinema.com/",
+            "coords": {
+                "lat": 51.4623,
+                "lng": -2.5898
+            },
+            "address": "Dove St S, Kingsdown, Bristol BS2 8JD",
+            "showtimes": []
+        }
+    ]
+}

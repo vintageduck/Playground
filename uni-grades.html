@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Uni Grades</title>
+
+    <!-- iOS PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+    <meta name="apple-mobile-web-app-title" content="Uni Grades">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+
+    <style>
+        :root {
+            --bg-body: #f2f2f7;
+            --bg-card: #ffffff;
+            --bg-card-secondary: #e5e5ea;
+            --text-main: #000000;
+            --text-sub: #8e8e93;
+            --separator: #c6c6c8;
+            --accent: #007aff;
+            --green: #34c759;
+            --red: #ff3b30;
+            --orange: #ff9500;
+            --yellow: #ffcc00;
+            --blue: #007aff;
+            --font-serif: "New York", "Times New Roman", Times, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-body: #000000;
+                --bg-card: #1c1c1e;
+                --bg-card-secondary: #2c2c2e;
+                --text-main: #ffffff;
+                --text-sub: #98989d;
+                --separator: #38383a;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-sans);
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+        }
+
+        /* --- NAVIGATION --- */
+        .nav-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            position: sticky;
+            top: 0;
+            background: var(--bg-body);
+            z-index: 100;
+        }
+
+        .nav-back {
+            color: var(--accent);
+            font-size: 17px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .nav-back:hover {
+            opacity: 0.7;
+        }
+
+        .nav-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .nav-action {
+            color: var(--accent);
+            font-size: 17px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .nav-spacer {
+            width: 60px;
+        }
+
+        /* --- PAGE TITLE --- */
+        .page-title {
+            font-size: 34px;
+            font-weight: 700;
+            padding: 0 20px 16px;
+            margin: 0;
+        }
+
+        /* --- PROGRESS BAR --- */
+        .progress-bar-container {
+            padding: 0 20px 16px;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--bg-card-secondary);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--green) 0%, var(--green) 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* --- STAT CARDS --- */
+        .stats-row {
+            display: flex;
+            gap: 12px;
+            padding: 0 20px 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stat-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: white;
+        }
+
+        .stat-icon.red {
+            background: var(--red);
+        }
+
+        .stat-icon.blue {
+            background: var(--blue);
+        }
+
+        .stat-icon.green {
+            background: var(--green);
+        }
+
+        .stat-icon.orange {
+            background: var(--orange);
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        /* --- SECTIONS --- */
+        .section {
+            padding: 0 20px 20px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 8px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .section-subtitle {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin: 4px 0 12px;
+        }
+
+        .section-action {
+            color: var(--accent);
+            font-size: 15px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* --- GOAL CHIPS --- */
+        .goals-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .goal-chip {
+            background: var(--bg-card);
+            border-radius: 10px;
+            padding: 12px 16px;
+            min-width: 100px;
+        }
+
+        .goal-chip-top {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 4px;
+        }
+
+        .goal-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        .goal-dot.impossible {
+            background: var(--red);
+        }
+
+        .goal-dot.difficult {
+            background: var(--orange);
+        }
+
+        .goal-dot.achievable {
+            background: var(--green);
+        }
+
+        .goal-needed {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .goal-label {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        /* --- YEAR/MODULE CARDS --- */
+        .card-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 16px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        /* --- RING PROGRESS --- */
+        .ring-container {
+            position: relative;
+            width: 56px;
+            height: 56px;
+            flex-shrink: 0;
+        }
+
+        .ring-svg {
+            transform: rotate(-90deg);
+        }
+
+        .ring-bg {
+            fill: none;
+            stroke: var(--bg-card-secondary);
+            stroke-width: 4;
+        }
+
+        .ring-fill {
+            fill: none;
+            stroke: var(--green);
+            stroke-width: 4;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .ring-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .card-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 600;
+            margin: 0 0 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .card-stats {
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .card-stat-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 4px;
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        .card-arrow {
+            color: var(--text-sub);
+            opacity: 0.5;
+        }
+
+        /* --- MODULE PROGRESS BAR --- */
+        .module-progress {
+            height: 4px;
+            background: var(--bg-card-secondary);
+            border-radius: 2px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+
+        .module-progress-fill {
+            height: 100%;
+            background: var(--green);
+            border-radius: 2px;
+        }
+
+        /* --- ASSESSMENT LIST --- */
+        .assessment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid var(--separator);
+        }
+
+        .assessment-item:last-child {
+            border-bottom: none;
+        }
+
+        .assessment-name {
+            font-size: 17px;
+        }
+
+        .assessment-details {
+            text-align: right;
+        }
+
+        .assessment-grade {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .assessment-weight {
+            font-size: 13px;
+            color: var(--text-sub);
+        }
+
+        /* --- ADD BUTTON --- */
+        .add-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 16px;
+            color: var(--accent);
+            font-size: 17px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .add-button:hover {
+            opacity: 0.7;
+        }
+
+        /* --- MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border-radius: 12px 12px 0 0;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            padding-bottom: calc(20px + env(safe-area-inset-bottom));
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .modal-close,
+        .modal-save {
+            color: var(--accent);
+            font-size: 17px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        .modal-save {
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 17px;
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            background: var(--bg-body);
+            color: var(--text-main);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* --- REAL GRADE CARD --- */
+        .real-grade-card {
+            background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
+            border: 1px solid var(--orange);
+        }
+
+        @media (prefers-color-scheme: light) {
+            .real-grade-card {
+                background: linear-gradient(135deg, #fff9e6 0%, #fff3cc 100%);
+            }
+        }
+
+        /* --- HIDDEN --- */
+        .hidden {
+            display: none !important;
+        }
+
+        /* --- DELETE BUTTON --- */
+        .delete-btn {
+            background: var(--red);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 17px;
+            width: 100%;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- OVERALL VIEW -->
+    <div id="view-overall" class="view">
+        <nav class="nav-header">
+            <a href="index.html" class="nav-back">
+                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <path d="M10 2L2 10L10 18" />
+                </svg>
+                Home
+            </a>
+            <span class="nav-title">Overall</span>
+            <button class="nav-action" onclick="showDataModal()">⚙️</button>
+        </nav>
+
+        <h1 class="page-title">Overall</h1>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-bar-fill" id="overall-progress-fill"></div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon red">≡</div>
+                <div>
+                    <div class="stat-value" id="overall-average">--</div>
+                    <div class="stat-label">Average</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">◐</div>
+                <div>
+                    <div class="stat-value" id="overall-complete">--</div>
+                    <div class="stat-label">Complete</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card real-grade-card">
+                <div class="stat-icon orange">⚡</div>
+                <div>
+                    <div class="stat-value" id="overall-real">--</div>
+                    <div class="stat-label">Real Grade</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Goals:</h2>
+            </div>
+            <p class="section-subtitle">The averages you need for the rest of your degree to achieve your goals.</p>
+            <div class="goals-grid" id="goals-grid"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Years:</h2>
+            </div>
+            <div class="card-list" id="years-list"></div>
+            <button class="add-button" onclick="showAddYearModal()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <circle cx="10" cy="10" r="10" />
+                    <path d="M10 5v10M5 10h10" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Add Year
+            </button>
+        </div>
+    </div>
+
+    <!-- YEAR VIEW -->
+    <div id="view-year" class="view hidden">
+        <nav class="nav-header">
+            <button class="nav-back" onclick="showOverallView()">
+                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <path d="M10 2L2 10L10 18" />
+                </svg>
+                Overall
+            </button>
+            <span class="nav-title" id="year-nav-title">Year 1</span>
+            <button class="nav-action" onclick="showEditYearModal()">Edit Year</button>
+        </nav>
+
+        <div class="progress-bar-container">
+            <div class="progress-bar">
+                <div class="progress-bar-fill" id="year-progress-fill"></div>
+            </div>
+        </div>
+
+        <div
+            style="padding: 0 20px 16px; display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px;">
+            <span><span id="year-credits">120</span> Credits</span>
+            <span><span id="year-weight">0</span>% Weight</span>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon red">≡</div>
+                <div>
+                    <div class="stat-value" id="year-average">--</div>
+                    <div class="stat-label">Average</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">◐</div>
+                <div>
+                    <div class="stat-value" id="year-complete">--</div>
+                    <div class="stat-label">Complete</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Modules:</h2>
+            </div>
+            <div class="card-list" id="modules-list"></div>
+            <button class="add-button" onclick="showAddModuleModal()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <circle cx="10" cy="10" r="10" />
+                    <path d="M10 5v10M5 10h10" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Add Module
+            </button>
+        </div>
+    </div>
+
+    <!-- MODULE VIEW -->
+    <div id="view-module" class="view hidden">
+        <nav class="nav-header">
+            <button class="nav-back" onclick="showYearView(currentYearIndex)">
+                <svg width="12" height="20" viewBox="0 0 12 20" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round">
+                    <path d="M10 2L2 10L10 18" />
+                </svg>
+                <span id="module-back-text">Year 3</span>
+            </button>
+            <span class="nav-title" id="module-nav-title">Module</span>
+            <button class="nav-action" onclick="showEditModuleModal()">Edit</button>
+        </nav>
+
+        <div
+            style="padding: 0 20px 16px; display: flex; justify-content: space-between; color: var(--text-sub); font-size: 13px;">
+            <span><span id="module-credits">40</span> Credits</span>
+            <span><span id="module-weight">33.3</span>% Weight</span>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-icon red">≡</div>
+                <div>
+                    <div class="stat-value" id="module-average">--</div>
+                    <div class="stat-label">Average</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon blue">◐</div>
+                <div>
+                    <div class="stat-value" id="module-complete">--</div>
+                    <div class="stat-label">Complete</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">Assessments:</h2>
+            </div>
+            <div class="card" style="flex-direction: column; align-items: stretch;">
+                <div id="assessments-list"></div>
+            </div>
+            <button class="add-button" onclick="showAddAssessmentModal()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                    <circle cx="10" cy="10" r="10" />
+                    <path d="M10 5v10M5 10h10" stroke="white" stroke-width="2" stroke-linecap="round" />
+                </svg>
+                Add Assessment
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <button class="modal-close" onclick="hideModal()">Cancel</button>
+                <span class="modal-title" id="modal-title">Add</span>
+                <button class="modal-save" id="modal-save" onclick="saveModal()">Save</button>
+            </div>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== DATA MODEL ====================
+        let data = {
+            years: [],
+            goals: [
+                { name: '72%', target: 72 },
+                { name: 'First (70%)', target: 70 },
+                { name: '2:1 (60%)', target: 60 },
+                { name: '2:2 (50%)', target: 50 },
+                { name: 'Third (40%)', target: 40 }
+            ]
+        };
+
+        let currentYearIndex = null;
+        let currentModuleIndex = null;
+        let modalMode = null;
+        let editIndex = null;
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            loadData();
+            renderOverallView();
+        }
+
+        // ==================== PERSISTENCE ====================
+        function saveData() {
+            localStorage.setItem('uniGradesData', JSON.stringify(data));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('uniGradesData');
+            if (saved) {
+                data = JSON.parse(saved);
+            }
+        }
+
+        // ==================== CALCULATIONS ====================
+        function calcModuleStats(module) {
+            if (!module.assessments || module.assessments.length === 0) {
+                return { average: 0, complete: 0, realGrade: 0 };
+            }
+            let totalWeight = 0;
+            let weightedSum = 0;
+            let completeWeight = 0;
+
+            module.assessments.forEach(a => {
+                if (a.grade !== null && a.grade !== undefined) {
+                    weightedSum += a.grade * a.weight;
+                    completeWeight += a.weight;
+                }
+                totalWeight += a.weight;
+            });
+
+            const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
+            const complete = totalWeight > 0 ? (completeWeight / totalWeight) * 100 : 0;
+            const realGrade = weightedSum; // Treating incomplete as 0%
+
+            return { average, complete, realGrade };
+        }
+
+        function calcYearStats(year) {
+            if (year.isComplete && year.fixedAverage !== null) {
+                return { average: year.fixedAverage, complete: 100, realGrade: year.fixedAverage };
+            }
+
+            if (!year.modules || year.modules.length === 0) {
+                return { average: 0, complete: 0, realGrade: 0 };
+            }
+
+            let totalWeight = 0;
+            let weightedSum = 0;
+            let completeWeight = 0;
+            let realSum = 0;
+
+            year.modules.forEach(m => {
+                const stats = calcModuleStats(m);
+                const moduleWeight = m.weight || 0;
+
+                if (stats.complete > 0) {
+                    weightedSum += stats.average * moduleWeight * (stats.complete / 100);
+                    completeWeight += moduleWeight * (stats.complete / 100);
+                }
+                realSum += stats.realGrade * (moduleWeight / 100);
+                totalWeight += moduleWeight;
+            });
+
+            const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
+            const complete = totalWeight > 0 ? (completeWeight / totalWeight) * 100 : 0;
+            const realGrade = realSum;
+
+            return { average, complete, realGrade };
+        }
+
+        function calcOverallStats() {
+            // Sum up all year weights (excluding 0-weight years)
+            let totalYearWeight = 0;
+            data.years.forEach(y => {
+                if (y.weight > 0) totalYearWeight += y.weight;
+            });
+
+            if (totalYearWeight === 0) {
+                return { average: 0, complete: 0, realGrade: 0 };
+            }
+
+            let weightedSum = 0;
+            let completeWeight = 0;
+            let realSum = 0;
+
+            data.years.forEach(y => {
+                if (y.weight === 0) return; // 0-weight years don't count
+
+                const stats = calcYearStats(y);
+                const yearWeight = y.weight;
+                const yearContributionFactor = yearWeight / totalYearWeight; // Normalize to actual total
+
+                if (stats.complete > 0) {
+                    // Weight contribution by year weight AND completion percentage
+                    weightedSum += stats.average * yearContributionFactor * (stats.complete / 100);
+                    completeWeight += yearContributionFactor * (stats.complete / 100);
+                }
+
+                // Real grade: what you'd get if all incomplete = 0%
+                // For complete years with fixedAverage, use the full contribution
+                // For incomplete years, use realGrade (treating missing as 0)
+                if (stats.complete === 100) {
+                    realSum += stats.average * yearContributionFactor;
+                } else {
+                    // Year not complete - calculate what's locked in
+                    realSum += stats.realGrade * yearContributionFactor / 100;
+                }
+            });
+
+            const average = completeWeight > 0 ? weightedSum / completeWeight : 0;
+            const complete = completeWeight * 100;
+            const realGrade = realSum;
+
+            return { average, complete, realGrade };
+        }
+
+        function calcGoalNeeded(targetGrade) {
+            const stats = calcOverallStats();
+            const completedContribution = stats.realGrade;
+            const remainingWeight = 100 - (stats.complete);
+
+            if (remainingWeight <= 0) return null; // Already complete
+
+            const needed = (targetGrade - completedContribution) / (remainingWeight / 100);
+            return needed;
+        }
+
+        // ==================== RING PROGRESS ====================
+        function createRing(percent, size = 56) {
+            const radius = (size - 8) / 2;
+            const circumference = 2 * Math.PI * radius;
+            const offset = circumference - (percent / 100) * circumference;
+
+            return `
+                <div class="ring-container" style="width: ${size}px; height: ${size}px;">
+                    <svg class="ring-svg" width="${size}" height="${size}">
+                        <circle class="ring-bg" cx="${size / 2}" cy="${size / 2}" r="${radius}"/>
+                        <circle class="ring-fill" cx="${size / 2}" cy="${size / 2}" r="${radius}"
+                            stroke-dasharray="${circumference}" 
+                            stroke-dashoffset="${offset}"/>
+                    </svg>
+                    <span class="ring-text">${Math.round(percent)}</span>
+                </div>
+            `;
+        }
+
+        // ==================== RENDER FUNCTIONS ====================
+        function renderOverallView() {
+            const stats = calcOverallStats();
+
+            document.getElementById('overall-progress-fill').style.width = `${stats.complete}%`;
+            document.getElementById('overall-average').textContent = `${stats.average.toFixed(1)}%`;
+            document.getElementById('overall-complete').textContent = `${stats.complete.toFixed(1)}%`;
+            document.getElementById('overall-real').textContent = `${stats.realGrade.toFixed(1)}%`;
+
+            // Goals
+            const goalsGrid = document.getElementById('goals-grid');
+            goalsGrid.innerHTML = data.goals.map(goal => {
+                const needed = calcGoalNeeded(goal.target);
+                let dotClass = 'achievable';
+                let neededText = '--';
+
+                if (needed !== null) {
+                    if (needed > 100) dotClass = 'impossible';
+                    else if (needed > 80) dotClass = 'difficult';
+                    neededText = `${needed.toFixed(1)}%`;
+                }
+
+                return `
+                    <div class="goal-chip">
+                        <div class="goal-chip-top">
+                            <div class="goal-dot ${dotClass}"></div>
+                            <span class="goal-needed">${neededText}</span>
+                        </div>
+                        <div class="goal-label">${goal.name}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Years list
+            const yearsList = document.getElementById('years-list');
+            yearsList.innerHTML = data.years.map((year, i) => {
+                const stats = calcYearStats(year);
+                return `
+                    <div class="card" onclick="showYearView(${i})">
+                        ${createRing(stats.complete)}
+                        <div class="card-content">
+                            <div class="card-title">${stats.average.toFixed(1)}%</div>
+                            <div class="card-subtitle">Average</div>
+                        </div>
+                        <div class="card-stats">
+                            <div class="card-stat-row">${year.credits} ⚖</div>
+                            <div class="card-stat-row">${year.weight}% 🔒</div>
+                        </div>
+                        <div class="card-arrow">
+                            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                <path d="M1 1l6 6-6 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showOverallView() {
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-overall').classList.remove('hidden');
+            renderOverallView();
+        }
+
+        function showYearView(yearIndex) {
+            currentYearIndex = yearIndex;
+            const year = data.years[yearIndex];
+            const stats = calcYearStats(year);
+
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-year').classList.remove('hidden');
+
+            document.getElementById('year-nav-title').textContent = year.name;
+            document.getElementById('year-progress-fill').style.width = `${stats.complete}%`;
+            document.getElementById('year-credits').textContent = year.credits;
+            document.getElementById('year-weight').textContent = year.weight;
+            document.getElementById('year-average').textContent = `${stats.average.toFixed(1)}%`;
+            document.getElementById('year-complete').textContent = `${stats.complete.toFixed(1)}%`;
+
+            const modulesList = document.getElementById('modules-list');
+            modulesList.innerHTML = year.modules.map((mod, i) => {
+                const modStats = calcModuleStats(mod);
+                return `
+                    <div class="card" onclick="showModuleView(${i})" style="flex-direction: column; align-items: stretch;">
+                        <div style="display: flex; align-items: center; gap: 16px;">
+                            <div class="card-content">
+                                <div class="card-title">${mod.name}</div>
+                                <div style="display: flex; gap: 24px; margin-top: 8px;">
+                                    <div>
+                                        <div style="font-size: 17px; font-weight: 600;">${modStats.average.toFixed(1)}%</div>
+                                        <div class="card-subtitle">Average</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 17px; font-weight: 600;">${modStats.complete.toFixed(1)}%</div>
+                                        <div class="card-subtitle">Complete</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 13px; color: var(--text-sub);">${mod.credits} ⚖</div>
+                                        <div style="font-size: 13px; color: var(--text-sub);">${mod.weight}% 🔒</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-arrow">
+                                <svg width="8" height="14" viewBox="0 0 8 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                    <path d="M1 1l6 6-6 6"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="module-progress">
+                            <div class="module-progress-fill" style="width: ${modStats.complete}%"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showModuleView(moduleIndex) {
+            currentModuleIndex = moduleIndex;
+            const year = data.years[currentYearIndex];
+            const mod = year.modules[moduleIndex];
+            const stats = calcModuleStats(mod);
+
+            document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+            document.getElementById('view-module').classList.remove('hidden');
+
+            document.getElementById('module-back-text').textContent = year.name;
+            document.getElementById('module-nav-title').textContent = mod.name;
+            document.getElementById('module-credits').textContent = mod.credits;
+            document.getElementById('module-weight').textContent = mod.weight;
+            document.getElementById('module-average').textContent = `${stats.average.toFixed(1)}%`;
+            document.getElementById('module-complete').textContent = `${stats.complete.toFixed(1)}%`;
+
+            const assessmentsList = document.getElementById('assessments-list');
+            if (mod.assessments.length === 0) {
+                assessmentsList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--text-sub);">No assessments yet</div>';
+            } else {
+                assessmentsList.innerHTML = mod.assessments.map((a, i) => `
+                    <div class="assessment-item" onclick="showEditAssessmentModal(${i})">
+                        <div class="assessment-name">${a.name}</div>
+                        <div class="assessment-details">
+                            <div class="assessment-grade">${a.grade !== null ? a.grade + '%' : '--'}</div>
+                            <div class="assessment-weight">${a.weight}% weight</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        // ==================== MODALS ====================
+        function showModal() {
+            document.getElementById('modal-overlay').classList.add('active');
+        }
+
+        function hideModal() {
+            document.getElementById('modal-overlay').classList.remove('active');
+        }
+
+        function closeModal(e) {
+            if (e.target === e.currentTarget) hideModal();
+        }
+
+        function showAddYearModal() {
+            modalMode = 'addYear';
+            document.getElementById('modal-title').textContent = 'Add Year';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Year Name</label>
+                    <input type="text" class="form-input" id="input-name" placeholder="Year 4" value="Year ${data.years.length + 1}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (%)</label>
+                    <input type="number" class="form-input" id="input-weight" placeholder="60" value="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Credits</label>
+                    <input type="number" class="form-input" id="input-credits" placeholder="120" value="120">
+                </div>
+            `;
+            showModal();
+        }
+
+        function showEditYearModal() {
+            modalMode = 'editYear';
+            editIndex = currentYearIndex;
+            const year = data.years[currentYearIndex];
+            document.getElementById('modal-title').textContent = 'Edit Year';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Year Name</label>
+                    <input type="text" class="form-input" id="input-name" value="${year.name}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (%)</label>
+                    <input type="number" class="form-input" id="input-weight" value="${year.weight}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Total Credits</label>
+                    <input type="number" class="form-input" id="input-credits" value="${year.credits}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Fixed Average (for completed years)</label>
+                    <input type="number" class="form-input" id="input-fixed" value="${year.fixedAverage || ''}" placeholder="Leave blank if not complete">
+                </div>
+                <button class="delete-btn" onclick="deleteYear()">Delete Year</button>
+            `;
+            showModal();
+        }
+
+        function showAddModuleModal() {
+            modalMode = 'addModule';
+            document.getElementById('modal-title').textContent = 'Add Module';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Module Name</label>
+                    <input type="text" class="form-input" id="input-name" placeholder="Module name">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Credits</label>
+                    <input type="number" class="form-input" id="input-credits" placeholder="20" value="20">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (%)</label>
+                    <input type="number" class="form-input" id="input-weight" placeholder="16.7" value="16.7" step="0.1">
+                </div>
+            `;
+            showModal();
+        }
+
+        function showEditModuleModal() {
+            modalMode = 'editModule';
+            editIndex = currentModuleIndex;
+            const mod = data.years[currentYearIndex].modules[currentModuleIndex];
+            document.getElementById('modal-title').textContent = 'Edit Module';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Module Name</label>
+                    <input type="text" class="form-input" id="input-name" value="${mod.name}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Credits</label>
+                    <input type="number" class="form-input" id="input-credits" value="${mod.credits}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (%)</label>
+                    <input type="number" class="form-input" id="input-weight" value="${mod.weight}" step="0.1">
+                </div>
+                <button class="delete-btn" onclick="deleteModule()">Delete Module</button>
+            `;
+            showModal();
+        }
+
+        function showAddAssessmentModal() {
+            modalMode = 'addAssessment';
+            document.getElementById('modal-title').textContent = 'Add Assessment';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Assessment Name</label>
+                    <input type="text" class="form-input" id="input-name" placeholder="Essay 1">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (%)</label>
+                    <input type="number" class="form-input" id="input-weight" placeholder="50" value="100">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Grade (leave blank if not yet received)</label>
+                    <input type="number" class="form-input" id="input-grade" placeholder="72" step="0.1">
+                </div>
+            `;
+            showModal();
+        }
+
+        function showEditAssessmentModal(index) {
+            modalMode = 'editAssessment';
+            editIndex = index;
+            const a = data.years[currentYearIndex].modules[currentModuleIndex].assessments[index];
+            document.getElementById('modal-title').textContent = 'Edit Assessment';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Assessment Name</label>
+                    <input type="text" class="form-input" id="input-name" value="${a.name}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Weight (%)</label>
+                    <input type="number" class="form-input" id="input-weight" value="${a.weight}">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Grade</label>
+                    <input type="number" class="form-input" id="input-grade" value="${a.grade !== null ? a.grade : ''}" step="0.1">
+                </div>
+                <button class="delete-btn" onclick="deleteAssessment()">Delete Assessment</button>
+            `;
+            showModal();
+        }
+
+        function saveModal() {
+            if (modalMode === 'addYear') {
+                data.years.push({
+                    name: document.getElementById('input-name').value,
+                    weight: parseFloat(document.getElementById('input-weight').value) || 0,
+                    credits: parseInt(document.getElementById('input-credits').value) || 120,
+                    isComplete: false,
+                    fixedAverage: null,
+                    modules: []
+                });
+                saveData();
+                renderOverallView();
+            } else if (modalMode === 'editYear') {
+                const year = data.years[editIndex];
+                year.name = document.getElementById('input-name').value;
+                year.weight = parseFloat(document.getElementById('input-weight').value) || 0;
+                year.credits = parseInt(document.getElementById('input-credits').value) || 120;
+                const fixed = document.getElementById('input-fixed').value;
+                year.fixedAverage = fixed ? parseFloat(fixed) : null;
+                year.isComplete = year.fixedAverage !== null;
+                saveData();
+                showYearView(currentYearIndex);
+            } else if (modalMode === 'addModule') {
+                data.years[currentYearIndex].modules.push({
+                    name: document.getElementById('input-name').value,
+                    credits: parseInt(document.getElementById('input-credits').value) || 20,
+                    weight: parseFloat(document.getElementById('input-weight').value) || 16.7,
+                    assessments: []
+                });
+                saveData();
+                showYearView(currentYearIndex);
+            } else if (modalMode === 'editModule') {
+                const mod = data.years[currentYearIndex].modules[editIndex];
+                mod.name = document.getElementById('input-name').value;
+                mod.credits = parseInt(document.getElementById('input-credits').value) || 20;
+                mod.weight = parseFloat(document.getElementById('input-weight').value) || 16.7;
+                saveData();
+                showModuleView(currentModuleIndex);
+            } else if (modalMode === 'addAssessment') {
+                const gradeVal = document.getElementById('input-grade').value;
+                data.years[currentYearIndex].modules[currentModuleIndex].assessments.push({
+                    name: document.getElementById('input-name').value,
+                    weight: parseFloat(document.getElementById('input-weight').value) || 100,
+                    grade: gradeVal ? parseFloat(gradeVal) : null
+                });
+                saveData();
+                showModuleView(currentModuleIndex);
+            } else if (modalMode === 'editAssessment') {
+                const a = data.years[currentYearIndex].modules[currentModuleIndex].assessments[editIndex];
+                const gradeVal = document.getElementById('input-grade').value;
+                a.name = document.getElementById('input-name').value;
+                a.weight = parseFloat(document.getElementById('input-weight').value) || 100;
+                a.grade = gradeVal ? parseFloat(gradeVal) : null;
+                saveData();
+                showModuleView(currentModuleIndex);
+            }
+            hideModal();
+        }
+
+        function deleteYear() {
+            if (confirm('Delete this year?')) {
+                data.years.splice(editIndex, 1);
+                saveData();
+                hideModal();
+                showOverallView();
+            }
+        }
+
+        function deleteModule() {
+            if (confirm('Delete this module?')) {
+                data.years[currentYearIndex].modules.splice(editIndex, 1);
+                saveData();
+                hideModal();
+                showYearView(currentYearIndex);
+            }
+        }
+
+        function deleteAssessment() {
+            if (confirm('Delete this assessment?')) {
+                data.years[currentYearIndex].modules[currentModuleIndex].assessments.splice(editIndex, 1);
+                saveData();
+                hideModal();
+                showModuleView(currentModuleIndex);
+            }
+        }
+
+        // ==================== DATA IMPORT/EXPORT ====================
+        function showDataModal() {
+            modalMode = 'data';
+            document.getElementById('modal-title').textContent = 'Data';
+            document.getElementById('modal-save').style.display = 'none';
+            document.getElementById('modal-content').innerHTML = `
+                <div class="form-group">
+                    <label class="form-label">Export Data</label>
+                    <button class="add-button" style="background: var(--bg-card-secondary); border-radius: 8px; margin: 0;" onclick="exportData()">
+                        📤 Download JSON
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Import Data (paste JSON below)</label>
+                    <textarea id="import-json" class="form-input" style="height: 150px; font-family: monospace; font-size: 12px;" placeholder='{"years": [...], "goals": [...]}'></textarea>
+                    <button class="add-button" style="background: var(--accent); color: white; border-radius: 8px; margin-top: 8px;" onclick="importData()">
+                        📥 Import JSON
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Danger Zone</label>
+                    <button class="delete-btn" onclick="resetData()">🗑️ Reset All Data</button>
+                </div>
+            `;
+            showModal();
+        }
+
+        function exportData() {
+            const jsonStr = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'uni-grades-data.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importData() {
+            const jsonStr = document.getElementById('import-json').value.trim();
+            if (!jsonStr) {
+                alert('Please paste JSON data first');
+                return;
+            }
+            try {
+                const imported = JSON.parse(jsonStr);
+                if (!imported.years || !Array.isArray(imported.years)) {
+                    throw new Error('Invalid format: missing years array');
+                }
+                data = imported;
+                if (!data.goals) {
+                    data.goals = [
+                        { name: '72%', target: 72 },
+                        { name: 'First (70%)', target: 70 },
+                        { name: '2:1 (60%)', target: 60 },
+                        { name: '2:2 (50%)', target: 50 },
+                        { name: 'Third (40%)', target: 40 }
+                    ];
+                }
+                saveData();
+                hideModal();
+                showOverallView();
+                alert('Data imported successfully!');
+            } catch (e) {
+                alert('Error importing data: ' + e.message);
+            }
+        }
+
+        function resetData() {
+            if (confirm('This will delete ALL your data. Are you sure?')) {
+                if (confirm('Really delete everything? This cannot be undone.')) {
+                    data = {
+                        years: [],
+                        goals: [
+                            { name: '72%', target: 72 },
+                            { name: 'First (70%)', target: 70 },
+                            { name: '2:1 (60%)', target: 60 },
+                            { name: '2:2 (50%)', target: 50 },
+                            { name: 'Third (40%)', target: 40 }
+                        ]
+                    };
+                    saveData();
+                    hideModal();
+                    showOverallView();
+                }
+            }
+        }
+
+        // ==================== INIT ====================
+        init();
+
+        // iOS PWA link handling
+        document.addEventListener("click", function (e) {
+            var a = e.target.closest("a");
+            if (a && a.href && a.href.includes(window.location.hostname)) {
+                e.preventDefault();
+                window.location.href = a.href;
+            }
+        });
+    </script>
+</body>
+
+</html>
