@@ -1290,8 +1290,8 @@
             modalMode = 'addAssessment';
             const mod = data.years[currentYearIndex].modules[currentModuleIndex];
             const remainingWeight = getRemainingWeight(mod);
-            const defaultWeight = remainingWeight > 0 ? remainingWeight : 100;
-            const hint = remainingWeight <= 0 ? '<p style="color: var(--orange); font-size: 13px; margin-top: 4px;">⚠️ Weights already total 100%+. Consider adjusting existing weights.</p>' : '';
+            const defaultWeight = remainingWeight > 0 ? remainingWeight : 50;
+            const hint = remainingWeight <= 0 ? '<p style="color: var(--orange); font-size: 13px; margin-top: 4px;">⚠️ Weights already total 100%+</p>' : '';
 
             document.getElementById('modal-title').textContent = 'Add Assessment';
             document.getElementById('modal-content').innerHTML = `
@@ -1299,7 +1299,11 @@
                     <label class="form-label">Assessment Name</label>
                     <input type="text" class="form-input" id="input-name" placeholder="Essay 1">
                 </div>
-                <div class="form-group">
+                <div class="form-group" style="display: flex; align-items: center; gap: 10px;">
+                    <input type="checkbox" id="input-formative" style="width: 20px; height: 20px; accent-color: var(--accent);" onchange="toggleFormativeWeight()">
+                    <label for="input-formative" style="font-size: 15px; cursor: pointer;">Formative (0% weight)</label>
+                </div>
+                <div class="form-group" id="weight-group">
                     <label class="form-label">Weight (%) - ${remainingWeight.toFixed(0)}% remaining</label>
                     <input type="number" class="form-input" id="input-weight" placeholder="50" value="${defaultWeight}" step="0.1" min="0">
                     ${hint}
@@ -1310,6 +1314,20 @@
                 </div>
             `;
             showModal();
+        }
+
+        function toggleFormativeWeight() {
+            const isFormative = document.getElementById('input-formative').checked;
+            const weightGroup = document.getElementById('weight-group');
+            const weightInput = document.getElementById('input-weight');
+            if (isFormative) {
+                weightGroup.style.display = 'none';
+                weightInput.value = '0';
+            } else {
+                weightGroup.style.display = 'block';
+                const mod = data.years[currentYearIndex].modules[currentModuleIndex];
+                weightInput.value = getRemainingWeight(mod) || 50;
+            }
         }
 
         function showEditAssessmentModal(index) {
