@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#000000">
+    <title>Maccies Tracker</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&display=swap');
+
+        :root {
+            --bg: #000000;
+            --bg-card: #000000;
+            --bg-input: #111111;
+            --text: #ffffff;
+            --text-sub: #a0a0a0;
+            --accent: #DA291C; /* Official Red */
+            --gold: #FFC72C;  /* Official Yellow */
+            --separator: #333333;
+            --font-main: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* --- AMBIENT BACKGROUND REMOVED --- */
+
+        /* --- HEADER --- */
+        header {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-family: var(--font-main);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 20px;
+            margin: -20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* --- HERO COUNTER --- */
+        .hero {
+            position: relative;
+            z-index: 5;
+            text-align: center;
+            padding: 30px 20px 40px;
+        }
+
+        .hero-label {
+            font-size: 1rem;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-weight: 400;
+        }
+
+        .hero-number {
+            font-size: clamp(6rem, 20vw, 10rem);
+            font-weight: 800;
+            line-height: 1;
+            color: var(--gold);
+            margin-bottom: 4px;
+            font-feature-settings: "tnum";
+            letter-spacing: -0.04em;
+        }
+
+        .hero-unit {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .hero-detail {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            font-weight: 400;
+        }
+
+        .hero-sub {
+            font-size: 0.75rem;
+            color: var(--text-sub);
+            opacity: 0.7;
+            margin-top: 4px;
+        }
+
+        /* --- FORM SECTION --- */
+        .form-section {
+            position: relative;
+            z-index: 5;
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-card {
+            background: var(--bg-card);
+            border-radius: 8px;
+            padding: 24px 0;
+            border-top: 1px solid var(--separator);
+            border-bottom: 1px solid var(--separator);
+        }
+
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .form-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-label {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .form-input, .form-select {
+            background: var(--bg-input);
+            border: 1px solid var(--separator);
+            border-radius: 4px;
+            padding: 14px 16px;
+            color: var(--text);
+            font-family: var(--font-main);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--gold);
+        }
+
+        .form-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 16px center;
+            padding-right: 40px;
+        }
+
+        .submit-btn {
+            grid-column: 1 / -1;
+            background: var(--gold);
+            border: none;
+            border-radius: 4px;
+            padding: 16px;
+            color: #000;
+            font-family: var(--font-main);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.15s;
+            margin-top: 12px;
+        }
+
+        .submit-btn:active {
+            background-color: #e6b327;
+        }
+
+        /* --- HISTORY --- */
+        .history-section {
+            position: relative;
+            z-index: 5;
+            padding: 0 20px 40px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .clear-btn {
+            background: none;
+            border: 1px solid var(--separator);
+            border-radius: 4px;
+            padding: 8px 16px;
+            color: var(--text-sub);
+            font-family: var(--font-main);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .clear-btn:active {
+            background: var(--separator);
+            color: var(--text);
+        }
+
+        .visit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .visit-card {
+            background: var(--bg-input);
+            border-radius: 4px;
+            padding: 16px 20px;
+            border-left: 4px solid var(--accent);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        .visit-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .visit-meal {
+            font-size: 0.85rem;
+            color: var(--gold);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .visit-order {
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 8px;
+            word-wrap: break-word;
+            line-height: 1.4;
+        }
+
+        .visit-meta {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .visit-delete {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            opacity: 0.4;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 4px;
+            flex-shrink: 0;
+            transition: opacity 0.2s, color 0.2s;
+        }
+
+        .visit-delete:active {
+            opacity: 1;
+            color: var(--accent);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-sub);
+            opacity: 0.5;
+        }
+
+        .empty-state .emoji {
+            font-size: 3rem;
+            margin-bottom: 12px;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+            font-style: italic;
+        }
+
+        /* --- TOAST --- */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text);
+            color: var(--bg);
+            padding: 14px 28px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 1rem;
+            z-index: 100;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 0; }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="back-btn">&larr;</a>
+        <span class="page-title">Maccies</span>
+    </header>
+
+    <!-- HERO COUNTER -->
+    <div class="hero" id="heroSection">
+        <div class="hero-label">It has been</div>
+        <div class="hero-number" id="heroNumber">0</div>
+        <div class="hero-unit" id="heroUnit">days</div>
+        <div class="hero-detail" id="heroDetail">since you last tasted Maccies</div>
+        <div class="hero-sub" id="heroSub"></div>
+    </div>
+
+    <!-- ADD VISIT FORM -->
+    <div class="form-section">
+        <div class="form-card">
+            <div class="form-header">
+                <span class="form-title">Log a Visit</span>
+            </div>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label class="form-label" for="visitDate">Date</label>
+                    <input type="date" class="form-input" id="visitDate">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="visitMeal">Meal</label>
+                    <select class="form-select" id="visitMeal">
+                        <option value="Breakfast">Breakfast</option>
+                        <option value="Lunch" selected>Lunch</option>
+                        <option value="Dinner">Dinner</option>
+                        <option value="Late Night">Late Night</option>
+                        <option value="Car Snack">Car Snack</option>
+                        <option value="Cheeky One">Cheeky One</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label" for="visitLocation">Location</label>
+                    <input type="text" class="form-input" id="visitLocation" placeholder="e.g. Cribbs Causeway">
+                </div>
+                <div class="form-group full-width">
+                    <label class="form-label" for="visitOrder">Order</label>
+                    <input type="text" class="form-input" id="visitOrder" placeholder="e.g. Big Mac meal, Sprite, 6 nugs">
+                </div>
+                <button class="submit-btn" onclick="addVisit()">Log Visit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="history-section">
+        <div class="section-header">
+            <span class="section-title">Visit History</span>
+            <button class="clear-btn" id="clearBtn" onclick="clearAll()" style="display:none;">Clear All</button>
+        </div>
+        <div class="visit-list" id="visitList"></div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast">🍟 Logged!</div>
+
+    <script>
+        const STORAGE_KEY = 'maccies_visits';
+
+        // --- DATA ---
+        function getVisits() {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        }
+
+        function saveVisits(visits) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(visits));
+        }
+
+        // --- INIT ---
+        function init() {
+            // Default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('visitDate').value = today;
+
+            renderHero();
+            renderList();
+        }
+
+        // --- HERO ---
+        function renderHero() {
+            const visits = getVisits();
+            const heroNum = document.getElementById('heroNumber');
+            const heroUnit = document.getElementById('heroUnit');
+            const heroDetail = document.getElementById('heroDetail');
+            const heroSub = document.getElementById('heroSub');
+
+            if (visits.length === 0) {
+                heroNum.textContent = '∞';
+                heroUnit.textContent = '';
+                heroDetail.textContent = 'since you last tasted Maccies';
+                heroSub.textContent = 'No visits logged yet.';
+                return;
+            }
+
+            // Find the most recent visit by date
+            const sorted = [...visits].sort((a, b) => new Date(b.date) - new Date(a.date));
+            const lastDate = new Date(sorted[0].date + 'T00:00:00');
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+
+            const diffMs = now - lastDate;
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffDays < 0) {
+                // Future date
+                heroNum.textContent = '🔮';
+                heroUnit.textContent = '';
+                heroDetail.textContent = 'since you last tasted Maccies';
+                heroSub.textContent = 'You\'ve logged a future visit... interesting.';
+            } else if (diffDays === 0) {
+                heroNum.textContent = '0';
+                heroUnit.textContent = 'days';
+                heroDetail.textContent = 'since you last tasted Maccies';
+                heroSub.textContent = 'That was today. Living your best life.';
+            } else if (diffDays < 30) {
+                heroNum.textContent = diffDays;
+                heroUnit.textContent = diffDays === 1 ? 'day' : 'days';
+                heroDetail.textContent = 'since you last tasted Maccies';
+                heroSub.textContent = diffDays <= 3 ? 'The cravings are still fresh...' :
+                                       diffDays <= 7 ? 'Stay strong. Or don\'t.' :
+                                       'Getting into respectable territory.';
+            } else if (diffDays < 365) {
+                const months = Math.floor(diffDays / 30);
+                const remainDays = diffDays % 30;
+                heroNum.textContent = months;
+                heroUnit.textContent = months === 1 ? 'month' : 'months';
+                heroDetail.textContent = 'since you last tasted Maccies';
+                heroSub.textContent = remainDays > 0
+                    ? `(and ${remainDays} day${remainDays !== 1 ? 's' : ''})`
+                    : 'On the dot. Impressive.';
+            } else {
+                const years = Math.floor(diffDays / 365);
+                const remainDays = diffDays % 365;
+                const remainMonths = Math.floor(remainDays / 30);
+                heroNum.textContent = years;
+                heroUnit.textContent = years === 1 ? 'year' : 'years';
+                heroDetail.textContent = 'since you last tasted Maccies';
+                if (remainMonths > 0) {
+                    heroSub.textContent = `(and ${remainMonths} month${remainMonths !== 1 ? 's' : ''}). Legend.`;
+                } else {
+                    heroSub.textContent = 'Who even ARE you?';
+                }
+            }
+        }
+
+        // --- ADD VISIT ---
+        function addVisit() {
+            const date = document.getElementById('visitDate').value;
+            const meal = document.getElementById('visitMeal').value;
+            const location = document.getElementById('visitLocation').value.trim();
+            const order = document.getElementById('visitOrder').value.trim();
+
+            if (!date) {
+                showToast('⚠️ Pick a date!');
+                return;
+            }
+
+            const visit = {
+                id: Date.now(),
+                date,
+                meal,
+                location: location || 'Unknown',
+                order: order || 'The usual'
+            };
+
+            const visits = getVisits();
+            visits.unshift(visit);
+            saveVisits(visits);
+
+            // Reset form (keep date as today)
+            document.getElementById('visitLocation').value = '';
+            document.getElementById('visitOrder').value = '';
+            document.getElementById('visitDate').value = new Date().toISOString().split('T')[0];
+
+            renderHero();
+            renderList();
+            showToast('🍟 Logged!');
+        }
+
+        // --- RENDER LIST ---
+        function renderList() {
+            const visits = getVisits();
+            const list = document.getElementById('visitList');
+            const clearBtn = document.getElementById('clearBtn');
+
+            if (visits.length === 0) {
+                list.innerHTML = `
+                    <div class="empty-state">
+                        <div class="emoji">🍟</div>
+                        <p>Nothing logged yet.</p>
+                    </div>
+                `;
+                clearBtn.style.display = 'none';
+                return;
+            }
+
+            clearBtn.style.display = 'block';
+
+            // Sort by date descending
+            const sorted = [...visits].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            list.innerHTML = sorted.map(v => {
+                const d = new Date(v.date + 'T00:00:00');
+                const dateStr = d.toLocaleDateString('en-GB', {
+                    weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+                });
+
+                return `
+                    <div class="visit-card">
+                        <div class="visit-info">
+                            <div class="visit-meal">${escapeHtml(v.meal)}</div>
+                            <div class="visit-order">${escapeHtml(v.order)}</div>
+                            <div class="visit-meta">
+                                <span>📍 ${escapeHtml(v.location)}</span>
+                                <span>📅 ${dateStr}</span>
+                            </div>
+                        </div>
+                        <button class="visit-delete" onclick="deleteVisit(${v.id})" aria-label="Delete visit">&times;</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- DELETE ---
+        function deleteVisit(id) {
+            let visits = getVisits();
+            visits = visits.filter(v => v.id !== id);
+            saveVisits(visits);
+            renderHero();
+            renderList();
+            showToast('🗑️ Removed');
+        }
+
+        function clearAll() {
+            if (confirm('Delete all visits? This cannot be undone.')) {
+                saveVisits([]);
+                renderHero();
+                renderList();
+                showToast('🧹 Slate wiped');
+            }
+        }
+
+        // --- TOAST ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        // --- UTILS ---
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // --- GO ---
+        init();
+    </script>
+</body>
+
+</html>

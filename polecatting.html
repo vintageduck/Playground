@@ -408,6 +408,148 @@
             font-size: 0.9rem;
         }
 
+        /* --- CALENDAR VIEW --- */
+        .calendar-container {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .calendar-container.visible {
+            display: flex;
+        }
+
+        .calendar-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+        }
+
+        .calendar-nav-btn {
+            background: none;
+            border: 1px solid #333;
+            color: #888;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .calendar-nav-btn:active {
+            background: #333;
+            color: #fff;
+        }
+
+        .calendar-month-label {
+            font-family: var(--font-ui);
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calendar-grid-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .calendar-day-header {
+            font-family: var(--font-ui);
+            font-size: 0.65rem;
+            color: #666;
+            text-align: center;
+            padding: 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-family: var(--font-ui);
+            font-size: 0.85rem;
+            color: #666;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .calendar-day.empty {
+            visibility: hidden;
+        }
+
+        .calendar-day.has-tails {
+            color: #fff;
+        }
+
+        .calendar-day.today {
+            border: 1px solid #444;
+        }
+
+        .tails-indicator {
+            position: absolute;
+            bottom: 4px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #666;
+        }
+
+        .calendar-day.has-tails .tails-indicator {
+            background: linear-gradient(135deg, #888, #aaa);
+        }
+
+        .calendar-day.has-many .tails-indicator {
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #aaa, #ddd);
+        }
+
+        .tails-count-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 0.55rem;
+            color: #888;
+            font-weight: 600;
+        }
+
+        .calendar-day.has-tails .tails-count-badge {
+            color: #ccc;
+        }
+
+        .calendar-total {
+            margin-top: auto;
+            padding: 15px 0;
+            text-align: center;
+            font-family: var(--font-ui);
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .calendar-total strong {
+            color: var(--text);
+            font-size: 1.1rem;
+        }
+
         .action-bar {
             display: flex;
             justify-content: space-between;
@@ -541,9 +683,9 @@
 
         <div class="history-controls">
             <button class="history-toggle active" onclick="setHistoryMode('days')" id="tab-days">7 Days</button>
-            <button class="history-toggle" onclick="setHistoryMode('weeks')" id="tab-weeks">Weeks</button>
             <button class="history-toggle" onclick="setHistoryMode('months')" id="tab-months">Months</button>
             <button class="history-toggle" onclick="setHistoryMode('years')" id="tab-years">Years</button>
+            <button class="history-toggle" onclick="setHistoryMode('calendar')" id="tab-calendar">Calendar</button>
         </div>
 
         <div class="chart-wrapper" id="chartWrapper">
@@ -554,6 +696,21 @@
 
         <div class="history-list" id="historyList">
             <!-- List injected here -->
+        </div>
+
+        <!-- Calendar View -->
+        <div class="calendar-container" id="calendarContainer">
+            <div class="calendar-nav">
+                <button class="calendar-nav-btn" onclick="changeCalendarMonth(-1)">&larr;</button>
+                <span class="calendar-month-label" id="calendarMonthLabel">January 2026</span>
+                <button class="calendar-nav-btn" onclick="changeCalendarMonth(1)">&rarr;</button>
+            </div>
+            <div class="calendar-grid-wrapper">
+                <div class="calendar-grid" id="calendarGrid">
+                    <!-- Calendar days injected here -->
+                </div>
+            </div>
+            <div class="calendar-total" id="calendarTotal"></div>
         </div>
 
         <div class="action-bar">
@@ -581,8 +738,9 @@
         const LEGACY_COUNT = 53; // The "Basement Number"
 
         let currentDateKey = new Date().toISOString().split('T')[0]; // selected date
-        let historyMode = 'days'; // days, weeks, months, years
+        let historyMode = 'days'; // days, weeks, months, calendar
         let counterDisplayMode = 'today'; // 'today' or 'allTime'
+        let calendarViewDate = new Date(); // For calendar month navigation
 
         let bgRotation = 0; // Track rotation
 
@@ -703,10 +861,29 @@
             historyMode = mode;
             document.querySelectorAll('.history-toggle').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${mode}`).classList.add('active');
-            renderHistory();
+
+            // Toggle visibility of chart vs calendar
+            const chartWrapper = document.getElementById('chartWrapper');
+            const historyList = document.getElementById('historyList');
+            const calendarContainer = document.getElementById('calendarContainer');
+
+            if (mode === 'calendar') {
+                chartWrapper.style.display = 'none';
+                historyList.style.display = 'none';
+                calendarContainer.classList.add('visible');
+                renderCalendar();
+            } else {
+                chartWrapper.style.display = '';
+                historyList.style.display = '';
+                calendarContainer.classList.remove('visible');
+                renderHistory();
+            }
         }
 
         function renderHistory() {
+            // Skip if we're in calendar mode
+            if (historyMode === 'calendar') return;
+
             const chart = document.getElementById('chart');
             const list = document.getElementById('historyList');
             const wrapper = document.getElementById('chartWrapper');
@@ -816,6 +993,113 @@
                 wrapper.scrollLeft = wrapper.scrollWidth;
             }, 50);
         }
+
+        // --- CALENDAR RENDERING ---
+        function changeCalendarMonth(delta) {
+            calendarViewDate.setMonth(calendarViewDate.getMonth() + delta);
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const label = document.getElementById('calendarMonthLabel');
+            const totalEl = document.getElementById('calendarTotal');
+            const data = getData();
+
+            const year = calendarViewDate.getFullYear();
+            const month = calendarViewDate.getMonth();
+
+            // Update month label
+            label.textContent = calendarViewDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+
+            // Clear grid
+            grid.innerHTML = '';
+
+            // Day headers (Mon-Sun)
+            const dayNames = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+            dayNames.forEach(d => {
+                grid.innerHTML += `<div class="calendar-day-header">${d}</div>`;
+            });
+
+            // Get first day of month and total days
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const daysInMonth = lastDay.getDate();
+
+            // Start weekday (0=Sun, need 0=Mon)
+            let startDay = firstDay.getDay();
+            startDay = startDay === 0 ? 6 : startDay - 1; // Convert to Mon=0
+
+            // Today's date for highlighting
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            // Monthly total
+            let monthTotal = 0;
+
+            // Empty cells before first day
+            for (let i = 0; i < startDay; i++) {
+                grid.innerHTML += `<div class="calendar-day empty"></div>`;
+            }
+
+            // Days of month
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const tails = data[dateStr] || 0;
+                monthTotal += tails;
+
+                let classes = 'calendar-day';
+                if (dateStr === todayStr) classes += ' today';
+                if (tails > 0) classes += ' has-tails';
+                if (tails >= 3) classes += ' has-many';
+
+                // Only show indicator and count if tails > 0
+                const indicator = tails > 0 ? `<div class="tails-indicator"></div>` : '';
+                const badge = tails > 0 ? `<span class="tails-count-badge">${tails}</span>` : '';
+
+                grid.innerHTML += `
+                    <div class="${classes}">
+                        ${day}
+                        ${badge}
+                        ${indicator}
+                    </div>
+                `;
+            }
+
+            // Update total
+            totalEl.innerHTML = `<strong>${monthTotal}</strong> tail${monthTotal !== 1 ? 's' : ''} this month`;
+        }
+
+        // --- SWIPE HANDLING FOR CALENDAR ---
+        (function () {
+            let touchStartX = 0;
+            let touchEndX = 0;
+
+            const calendarContainer = document.getElementById('calendarContainer');
+
+            calendarContainer.addEventListener('touchstart', e => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            calendarContainer.addEventListener('touchend', e => {
+                touchEndX = e.changedTouches[0].screenX;
+                handleSwipe();
+            }, { passive: true });
+
+            function handleSwipe() {
+                const threshold = 50; // minimum swipe distance
+                const diff = touchStartX - touchEndX;
+
+                if (Math.abs(diff) > threshold) {
+                    if (diff > 0) {
+                        // Swipe left = next month
+                        changeCalendarMonth(1);
+                    } else {
+                        // Swipe right = previous month
+                        changeCalendarMonth(-1);
+                    }
+                }
+            }
+        })();
 
         function downloadCSV() {
             const data = getData();
