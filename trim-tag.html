@@ -768,7 +768,19 @@
                 pasteInput.value = '';
             }
 
-            const file = e.clipboardData.files && e.clipboardData.files[0];
+            let file = (e.clipboardData.files && e.clipboardData.files.length > 0) ? e.clipboardData.files[0] : null;
+
+            // Fallback: search items manually just in case Safari hides it from .files
+            if (!file && e.clipboardData.items) {
+                for (let i = 0; i < e.clipboardData.items.length; i++) {
+                    const item = e.clipboardData.items[i];
+                    if (item.kind === 'file') {
+                        file = item.getAsFile();
+                        if (file) break;
+                    }
+                }
+            }
+
             if (file) {
                 const dt = new DataTransfer();
                 dt.items.add(file);
@@ -776,7 +788,17 @@
                 audioInput.files = dt.files;
                 audioInput.dispatchEvent(new Event('change'));
             } else if (e.target === pasteInput) {
-                showMessage("No audio file found in paste.", 'error');
+                const types = e.clipboardData.types ? Array.from(e.clipboardData.types).join(', ') : 'none';
+                let itemsStr = '';
+                if (e.clipboardData.items) {
+                    for(let i=0; i<e.clipboardData.items.length; i++) {
+                        itemsStr += e.clipboardData.items[i].kind + ':' + e.clipboardData.items[i].type + ' ';
+                    }
+                }
+                const text = e.clipboardData.getData('text/plain');
+                const textLen = text ? text.length + ' chars' : 'none';
+                
+                showMessage(`Failed to read file from clipboard. Safari saw: Types [${types}], Items [${itemsStr}], Text [${textLen}]`, 'error');
             }
         });
 
