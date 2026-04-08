@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#0a0a0a">
+    <title>Roman Numerals</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+            --bg: #0a0a0a;
+            --bg-card: #141414;
+            --bg-input: #1a1a1a;
+            --text: #f0ece4;
+            --text-sub: #8a8578;
+            --text-muted: #5a5549;
+            --accent: #c9a84c;
+            --accent-dim: rgba(201, 168, 76, 0.15);
+            --accent-glow: rgba(201, 168, 76, 0.08);
+            --separator: #2a2520;
+            --error: #c0392b;
+            --font-serif: 'Cormorant Garamond', 'New York', Georgia, serif;
+            --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* --- HEADER --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+        }
+
+        .back-btn {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-family: var(--font-sans);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 20px;
+            margin: -20px;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            letter-spacing: 0.02em;
+        }
+
+        /* --- HERO / DISPLAY --- */
+        .hero {
+            text-align: center;
+            padding: 20px 20px 30px;
+        }
+
+        .hero-label {
+            font-family: var(--font-sans);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+        }
+
+        .hero-numeral {
+            font-family: var(--font-serif);
+            font-size: clamp(3rem, 14vw, 7rem);
+            font-weight: 700;
+            line-height: 1;
+            color: var(--accent);
+            margin-bottom: 8px;
+            letter-spacing: 0.04em;
+            min-height: 1.1em;
+            transition: opacity 0.3s ease;
+            word-break: break-all;
+        }
+
+        .hero-numeral.fade {
+            opacity: 0;
+        }
+
+        .hero-decimal {
+            font-family: var(--font-sans);
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: var(--text);
+            margin-bottom: 6px;
+            min-height: 1.4em;
+        }
+
+        .hero-context {
+            font-family: var(--font-serif);
+            font-style: italic;
+            font-size: 1rem;
+            color: var(--text-sub);
+            min-height: 1.4em;
+            padding: 0 20px;
+            line-height: 1.4;
+        }
+
+        /* --- INPUT SECTION --- */
+        .input-section {
+            padding: 0 20px;
+            margin-bottom: 24px;
+        }
+
+        .input-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--separator);
+        }
+
+        .mode-toggle {
+            display: flex;
+            background: var(--bg);
+            border-radius: 8px;
+            padding: 3px;
+            margin-bottom: 20px;
+            border: 1px solid var(--separator);
+        }
+
+        .mode-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 10px 16px;
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-sub);
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.25s ease;
+        }
+
+        .mode-btn.active {
+            background: var(--accent-dim);
+            color: var(--accent);
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .main-input {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--separator);
+            border-radius: 8px;
+            padding: 16px 50px 16px 18px;
+            color: var(--text);
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            outline: none;
+            transition: border-color 0.2s;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .main-input::placeholder {
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .main-input:focus {
+            border-color: var(--accent);
+        }
+
+        .main-input.error {
+            border-color: var(--error);
+            animation: shake 0.4s ease;
+        }
+
+        .clear-input-btn {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--separator);
+            border: none;
+            color: var(--text-sub);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .clear-input-btn.visible {
+            display: flex;
+        }
+
+        .error-text {
+            font-size: 0.8rem;
+            color: var(--error);
+            margin-top: 8px;
+            min-height: 1.2em;
+            font-weight: 500;
+        }
+
+        /* --- DETAIL CARDS --- */
+        .details-section {
+            padding: 0 20px 40px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .detail-card {
+            background: var(--bg-card);
+            border: 1px solid var(--separator);
+            border-radius: 10px;
+            padding: 16px;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        .detail-card.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .detail-card.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .detail-label {
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            font-family: var(--font-serif);
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text);
+            line-height: 1.3;
+        }
+
+        .detail-value.accent {
+            color: var(--accent);
+        }
+
+        /* --- REFERENCE TABLE --- */
+        .reference-section {
+            padding: 0 20px 40px;
+        }
+
+        .reference-toggle {
+            background: none;
+            border: none;
+            color: var(--text-sub);
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            padding: 0;
+        }
+
+        .reference-toggle .chevron {
+            transition: transform 0.3s ease;
+            font-size: 0.7rem;
+        }
+
+        .reference-toggle .chevron.open {
+            transform: rotate(90deg);
+        }
+
+        .reference-table {
+            display: none;
+            background: var(--bg-card);
+            border: 1px solid var(--separator);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .reference-table.open {
+            display: block;
+        }
+
+        .ref-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 18px;
+            border-bottom: 1px solid var(--separator);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .ref-row:last-child {
+            border-bottom: none;
+        }
+
+        .ref-row:active {
+            background: var(--accent-glow);
+        }
+
+        .ref-numeral {
+            font-family: var(--font-serif);
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent);
+            min-width: 80px;
+        }
+
+        .ref-name {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            flex: 1;
+            text-align: center;
+        }
+
+        .ref-value {
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text);
+            min-width: 80px;
+            text-align: right;
+        }
+
+        /* --- TOAST --- */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text);
+            color: var(--bg);
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            z-index: 100;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-6px); }
+            40% { transform: translateX(6px); }
+            60% { transform: translateX(-4px); }
+            80% { transform: translateX(4px); }
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 0; }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <a href="index.html" class="back-btn">&larr;</a>
+        <span class="page-title">Numerals</span>
+    </header>
+
+    <!-- HERO DISPLAY -->
+    <div class="hero">
+        <div class="hero-label">Result</div>
+        <div class="hero-numeral" id="heroNumeral">MMXXVI</div>
+        <div class="hero-decimal" id="heroDecimal">2,026</div>
+        <div class="hero-context" id="heroContext">The current year</div>
+    </div>
+
+    <!-- INPUT -->
+    <div class="input-section">
+        <div class="input-card">
+            <div class="mode-toggle">
+                <button class="mode-btn active" id="modeDecimal" onclick="setMode('decimal')">Number → Roman</button>
+                <button class="mode-btn" id="modeRoman" onclick="setMode('roman')">Roman → Number</button>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" class="main-input" id="mainInput"
+                    placeholder="e.g. 1066"
+                    inputmode="numeric"
+                    autocomplete="off"
+                    autocorrect="off"
+                    spellcheck="false">
+                <button class="clear-input-btn" id="clearBtn" onclick="clearInput()">&times;</button>
+            </div>
+            <div class="error-text" id="errorText"></div>
+        </div>
+    </div>
+
+    <!-- DETAIL CARDS -->
+    <div class="details-section">
+        <div class="detail-grid" id="detailGrid">
+            <div class="detail-card" id="cardCentury">
+                <div class="detail-label">Century</div>
+                <div class="detail-value" id="valCentury">21st</div>
+            </div>
+            <div class="detail-card" id="cardDigits">
+                <div class="detail-label">Digits</div>
+                <div class="detail-value" id="valDigits">4</div>
+            </div>
+            <div class="detail-card full-width" id="cardBreakdown">
+                <div class="detail-label">Breakdown</div>
+                <div class="detail-value accent" id="valBreakdown">MM + XX + VI</div>
+            </div>
+            <div class="detail-card full-width" id="cardFact">
+                <div class="detail-label">Historical Note</div>
+                <div class="detail-value" id="valFact" style="font-style: italic; font-weight: 400; font-size: 1rem;">—</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- REFERENCE TABLE -->
+    <div class="reference-section">
+        <button class="reference-toggle" id="refToggle" onclick="toggleReference()">
+            <span class="chevron" id="refChevron">▶</span>
+            Reference Table
+        </button>
+        <div class="reference-table" id="refTable">
+            <div class="ref-row" onclick="quickInsert('I', 1)">
+                <span class="ref-numeral">I</span>
+                <span class="ref-name">ūnus</span>
+                <span class="ref-value">1</span>
+            </div>
+            <div class="ref-row" onclick="quickInsert('V', 5)">
+                <span class="ref-numeral">V</span>
+                <span class="ref-name">quīnque</span>
+                <span class="ref-value">5</span>
+            </div>
+            <div class="ref-row" onclick="quickInsert('X', 10)">
+                <span class="ref-numeral">X</span>
+                <span class="ref-name">decem</span>
+                <span class="ref-value">10</span>
+            </div>
+            <div class="ref-row" onclick="quickInsert('L', 50)">
+                <span class="ref-numeral">L</span>
+                <span class="ref-name">quīnquāgintā</span>
+                <span class="ref-value">50</span>
+            </div>
+            <div class="ref-row" onclick="quickInsert('C', 100)">
+                <span class="ref-numeral">C</span>
+                <span class="ref-name">centum</span>
+                <span class="ref-value">100</span>
+            </div>
+            <div class="ref-row" onclick="quickInsert('D', 500)">
+                <span class="ref-numeral">D</span>
+                <span class="ref-name">quīngentī</span>
+                <span class="ref-value">500</span>
+            </div>
+            <div class="ref-row" onclick="quickInsert('M', 1000)">
+                <span class="ref-numeral">M</span>
+                <span class="ref-name">mīlle</span>
+                <span class="ref-value">1,000</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // --- STATE ---
+        let mode = 'decimal'; // 'decimal' or 'roman'
+        let currentValue = null;
+
+        // --- ROMAN <-> DECIMAL ---
+        const ROMAN_MAP = [
+            [1000, 'M'], [900, 'CM'], [500, 'D'], [400, 'CD'],
+            [100, 'C'], [90, 'XC'], [50, 'L'], [40, 'XL'],
+            [10, 'X'], [9, 'IX'], [5, 'V'], [4, 'IV'], [1, 'I']
+        ];
+
+        function toRoman(num) {
+            if (num <= 0 || num > 3999999 || !Number.isInteger(num)) return null;
+            let result = '';
+            let remaining = num;
+            for (const [value, numeral] of ROMAN_MAP) {
+                while (remaining >= value) {
+                    result += numeral;
+                    remaining -= value;
+                }
+            }
+            return result;
+        }
+
+        function fromRoman(str) {
+            const s = str.toUpperCase().trim();
+            if (!s || !/^[MDCLXVI]+$/i.test(s)) return null;
+
+            const map = { M: 1000, D: 500, C: 100, L: 50, X: 10, V: 5, I: 1 };
+            let total = 0;
+            for (let i = 0; i < s.length; i++) {
+                const current = map[s[i]];
+                const next = map[s[i + 1]] || 0;
+                if (current === undefined) return null;
+                if (current < next) {
+                    total -= current;
+                } else {
+                    total += current;
+                }
+            }
+
+            // Validate by re-encoding: the canonical form must match 
+            if (toRoman(total) !== s) return null;
+            return total;
+        }
+
+        // --- BREAKDOWN ---
+        function getBreakdown(num) {
+            const parts = [];
+            let remaining = num;
+            for (const [value, numeral] of ROMAN_MAP) {
+                while (remaining >= value) {
+                    parts.push(numeral);
+                    remaining -= value;
+                }
+            }
+            return parts.join(' + ');
+        }
+
+        // --- CENTURY ---
+        function getCentury(num) {
+            if (num <= 0) return '—';
+            const c = Math.ceil(num / 100);
+            const suffix = getOrdinalSuffix(c);
+            return `${c}${suffix}`;
+        }
+
+        function getOrdinalSuffix(n) {
+            const s = ['th', 'st', 'nd', 'rd'];
+            const v = n % 100;
+            return s[(v - 20) % 10] || s[v] || s[0];
+        }
+
+        // --- HISTORICAL FACTS ---
+        const HISTORICAL_FACTS = {
+            1: 'The beginning of the Common Era.',
+            42: 'The answer to life, the universe, and everything.',
+            55: 'Julius Caesar first landed in Britain.',
+            66: 'The Great Fire of Rome under Nero.',
+            79: 'Vesuvius erupted and buried Pompeii.',
+            100: 'Rome at its territorial height under Trajan.',
+            313: 'Constantine issued the Edict of Milan.',
+            410: 'The Visigoths sacked Rome.',
+            476: 'Fall of the Western Roman Empire.',
+            793: 'The Viking Age began with the raid on Lindisfarne.',
+            1066: 'William the Conqueror won the Battle of Hastings.',
+            1086: 'The Domesday Book was completed.',
+            1215: 'The Magna Carta was sealed at Runnymede.',
+            1348: 'The Black Death arrived in England.',
+            1415: 'Henry V won the Battle of Agincourt.',
+            1485: 'The Battle of Bosworth Field ended the Wars of the Roses.',
+            1492: 'Columbus reached the Americas.',
+            1509: 'Henry VIII ascended the English throne.',
+            1534: 'Henry VIII broke with Rome.',
+            1588: 'The Spanish Armada was defeated.',
+            1605: 'The Gunpowder Plot was foiled.',
+            1642: 'The English Civil War began.',
+            1649: 'Charles I was executed.',
+            1666: 'The Great Fire of London.',
+            1707: 'The Acts of Union created Great Britain.',
+            1776: 'The American Declaration of Independence.',
+            1789: 'The French Revolution began.',
+            1805: 'The Battle of Trafalgar.',
+            1815: 'The Battle of Waterloo.',
+            1837: 'Queen Victoria began her reign.',
+            1859: 'Darwin published On the Origin of Species.',
+            1901: 'Queen Victoria died; the Edwardian era began.',
+            1914: 'The Great War began.',
+            1918: 'The First World War ended.',
+            1939: 'The Second World War began.',
+            1945: 'The Second World War ended.',
+            1953: 'Elizabeth II was crowned.',
+            1966: 'England won the World Cup.',
+            1969: 'The Apollo 11 moon landing.',
+            1989: 'The Berlin Wall fell.',
+            2000: 'The turn of the millennium.',
+            2012: 'The London Olympics.',
+            2016: 'The Brexit referendum.',
+            2020: 'The COVID-19 pandemic began.',
+            2026: 'The current year.',
+        };
+
+        function getHistoricalFact(num) {
+            if (HISTORICAL_FACTS[num]) {
+                return HISTORICAL_FACTS[num];
+            }
+            // Generic century context
+            if (num > 0 && num <= 3999) {
+                const century = Math.ceil(num / 100);
+                const centuryStr = getCentury(num);
+                return `A year in the ${centuryStr} century.`;
+            }
+            return null;
+        }
+
+        // --- MODE ---
+        function setMode(newMode) {
+            mode = newMode;
+            const input = document.getElementById('mainInput');
+            const modeDecimal = document.getElementById('modeDecimal');
+            const modeRoman = document.getElementById('modeRoman');
+
+            modeDecimal.classList.toggle('active', mode === 'decimal');
+            modeRoman.classList.toggle('active', mode === 'roman');
+
+            if (mode === 'decimal') {
+                input.placeholder = 'e.g. 1066';
+                input.inputMode = 'numeric';
+            } else {
+                input.placeholder = 'e.g. MCMLXVI';
+                input.inputMode = 'text';
+            }
+
+            clearInput();
+        }
+
+        // --- INPUT HANDLING ---
+        const mainInput = document.getElementById('mainInput');
+        const clearBtn = document.getElementById('clearBtn');
+        const errorText = document.getElementById('errorText');
+
+        mainInput.addEventListener('input', () => {
+            const val = mainInput.value.trim();
+            clearBtn.classList.toggle('visible', val.length > 0);
+
+            if (!val) {
+                resetDisplay();
+                errorText.textContent = '';
+                mainInput.classList.remove('error');
+                return;
+            }
+
+            if (mode === 'decimal') {
+                handleDecimalInput(val);
+            } else {
+                handleRomanInput(val);
+            }
+        });
+
+        function handleDecimalInput(val) {
+            // Strip commas and spaces for flexibility
+            const cleaned = val.replace(/[,\s]/g, '');
+            const num = parseInt(cleaned, 10);
+
+            if (isNaN(num) || num !== parseFloat(cleaned)) {
+                showError('Enter a whole number');
+                return;
+            }
+            if (num <= 0) {
+                showError('Must be a positive number');
+                return;
+            }
+            if (num > 3999999) {
+                showError('Maximum is 3,999,999');
+                return;
+            }
+
+            errorText.textContent = '';
+            mainInput.classList.remove('error');
+            currentValue = num;
+            updateDisplay(num, toRoman(num));
+        }
+
+        function handleRomanInput(val) {
+            const upper = val.toUpperCase();
+            // Check for invalid characters
+            if (/[^MDCLXVI]/i.test(upper)) {
+                showError('Invalid characters. Use M, D, C, L, X, V, I');
+                return;
+            }
+
+            const num = fromRoman(upper);
+            if (num === null) {
+                showError('Not a valid Roman numeral');
+                return;
+            }
+
+            errorText.textContent = '';
+            mainInput.classList.remove('error');
+            currentValue = num;
+            updateDisplay(num, upper);
+        }
+
+        function showError(msg) {
+            errorText.textContent = msg;
+            mainInput.classList.add('error');
+            currentValue = null;
+            hideDetails();
+        }
+
+        // --- DISPLAY ---
+        function updateDisplay(num, roman) {
+            const heroNumeral = document.getElementById('heroNumeral');
+            const heroDecimal = document.getElementById('heroDecimal');
+            const heroContext = document.getElementById('heroContext');
+
+            // Animate the swap
+            heroNumeral.classList.add('fade');
+            setTimeout(() => {
+                heroNumeral.textContent = roman;
+                heroDecimal.textContent = num.toLocaleString('en-GB');
+
+                const fact = getHistoricalFact(num);
+                heroContext.textContent = fact || '';
+
+                heroNumeral.classList.remove('fade');
+            }, 150);
+
+            // Detail cards
+            document.getElementById('valCentury').textContent = getCentury(num);
+            document.getElementById('valDigits').textContent = roman.length + ' characters';
+            document.getElementById('valBreakdown').textContent = getBreakdown(num);
+
+            const factCard = document.getElementById('cardFact');
+            const factVal = document.getElementById('valFact');
+            if (HISTORICAL_FACTS[num]) {
+                factVal.textContent = HISTORICAL_FACTS[num];
+                factCard.style.display = '';
+            } else {
+                factCard.style.display = 'none';
+            }
+
+            showDetails();
+        }
+
+        function resetDisplay() {
+            const heroNumeral = document.getElementById('heroNumeral');
+            const heroDecimal = document.getElementById('heroDecimal');
+            const heroContext = document.getElementById('heroContext');
+
+            heroNumeral.classList.add('fade');
+            setTimeout(() => {
+                heroNumeral.textContent = 'MMXXVI';
+                heroDecimal.textContent = '2,026';
+                heroContext.textContent = 'The current year';
+                heroNumeral.classList.remove('fade');
+            }, 150);
+
+            currentValue = null;
+            hideDetails();
+        }
+
+        function showDetails() {
+            const cards = document.querySelectorAll('.detail-card');
+            cards.forEach((card, i) => {
+                if (card.style.display === 'none') return;
+                setTimeout(() => card.classList.add('visible'), i * 60);
+            });
+        }
+
+        function hideDetails() {
+            const cards = document.querySelectorAll('.detail-card');
+            cards.forEach(card => card.classList.remove('visible'));
+        }
+
+        function clearInput() {
+            mainInput.value = '';
+            clearBtn.classList.remove('visible');
+            errorText.textContent = '';
+            mainInput.classList.remove('error');
+            resetDisplay();
+        }
+
+        // --- REFERENCE TABLE ---
+        function toggleReference() {
+            const table = document.getElementById('refTable');
+            const chevron = document.getElementById('refChevron');
+            table.classList.toggle('open');
+            chevron.classList.toggle('open');
+        }
+
+        function quickInsert(roman, decimal) {
+            if (mode === 'decimal') {
+                mainInput.value = decimal;
+            } else {
+                mainInput.value = roman;
+            }
+            mainInput.dispatchEvent(new Event('input'));
+            showToast(`${roman} = ${decimal}`);
+        }
+
+        // --- TOAST ---
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 1800);
+        }
+
+        // --- INIT ---
+        function init() {
+            // Show default state (current year)
+            currentValue = 2026;
+            showDetails();
+            const factVal = document.getElementById('valFact');
+            factVal.textContent = HISTORICAL_FACTS[2026];
+        }
+
+        init();
+    </script>
+
+    <!-- iOS PWA link intercept -->
+    <script>
+        document.addEventListener("click", function(e) {
+            var a = e.target.closest("a");
+            if (a && a.href && a.href.includes(window.location.hostname)) {
+                e.preventDefault();
+                window.location.href = a.href;
+            }
+        });
+    </script>
+</body>
+
+</html>
