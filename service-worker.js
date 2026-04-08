@@ -27,3 +27,20 @@ self.addEventListener('fetch', (event) => {
 });
 
 
+fetch(event.request)
+    .then((networkResponse) => {
+        const clone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return networkResponse;
+    })
+    .catch(() => caches.match(event.request))
+        );
+    } else {
+    // Cache-first for assets (images, etc.)
+    event.respondWith(
+        caches.match(event.request).then((response) => response || fetch(event.request))
+    );
+}
+});
+
+
