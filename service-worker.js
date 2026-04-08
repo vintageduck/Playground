@@ -1,4 +1,4 @@
-const CACHE_NAME = 'playground-v2';
+const CACHE_NAME = 'playground-v3';
 const ASSETS_TO_CACHE = [
     './',
     './index.html',
@@ -8,6 +8,8 @@ const ASSETS_TO_CACHE = [
     './rating.html',
     './uni-grades.html',
     './ratking.svg',
+    './maccies.html',
+    './trim-tag.html',
     './icons/icon-192.png',
     './icons/icon-512.png'
 ];

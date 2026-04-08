@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Calendar converter displaying dates across multiple calendar systems">
+    <title>Calendar Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="calendar-converter.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Calendar Converter</h1>
+        </header>
+
+        <div class="date-picker">
+            <input type="date" id="date-input" class="date-input">
+            <button id="today-btn" class="today-btn">Today</button>
+        </div>
+
+        <div class="main-date" id="main-date"></div>
+
+        <div class="calendars-list" id="calendars-list">
+            <!-- Calendar items will be dynamically generated -->
+        </div>
+    </div>
+
+    <script src="calendar-converter.js"></script>
+</body>
+
+</html>

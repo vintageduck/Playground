@@ -1,0 +1,195 @@
+:root {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --border-color: #e5e7eb;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --accent: #3b82f6;
+    --hover: #eff6ff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
+
+/* Header */
+header {
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.025em;
+}
+
+/* Date Picker */
+.date-picker {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+.date-input {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 0.625rem 0.875rem;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.date-input:hover {
+    border-color: var(--accent);
+}
+
+.date-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.today-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    padding: 0.625rem 1.25rem;
+    color: white;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.today-btn:hover {
+    background: #2563eb;
+}
+
+.today-btn:active {
+    transform: scale(0.98);
+}
+
+/* Main Date Display */
+.main-date {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.main-date .date-value {
+    font-size: 2rem;
+    font-weight: 300;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.main-date .day-name {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+/* Calendars List */
+.calendars-list {
+    display: grid;
+    gap: 0;
+}
+
+.calendar-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    padding: 1.25rem 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: background 0.15s ease;
+}
+
+.calendar-item:hover {
+    background: var(--hover);
+    margin: 0 -1rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+
+.calendar-item:last-child {
+    border-bottom: none;
+}
+
+.calendar-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    align-self: center;
+}
+
+.calendar-value {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--text-primary);
+    align-self: center;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .container {
+        padding: 2rem 1rem;
+    }
+
+    .date-picker {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .main-date .date-value {
+        font-size: 1.5rem;
+    }
+
+    .calendar-item {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 1rem 0;
+    }
+
+    .calendar-item:hover {
+        margin: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .calendar-name {
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .calendar-value {
+        font-size: 0.9375rem;
+    }
+}
