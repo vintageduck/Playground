@@ -555,11 +555,14 @@
                 <!-- 1. Audio File Upload -->
                 <div>
                     <label class="section-label">1. Select Audio (Any Format)</label>
-                    <label class="file-label" id="audioFileLabel">
-                        <i class="ph ph-upload-simple icon"></i>
-                        <span id="audioFileName" class="file-name">Choose a file...</span>
-                        <input type="file" id="audioFile" accept="audio/*,video/*,.m4a,.mp3,.wav,.flac,.ogg,.opus,.aac,.wma,.webm">
-                    </label>
+                    <div style="display: flex; gap: 8px; flex-direction: column;">
+                        <label class="file-label" id="audioFileLabel">
+                            <i class="ph ph-upload-simple icon"></i>
+                            <span id="audioFileName" class="file-name">Choose a file...</span>
+                            <input type="file" id="audioFile" accept="audio/*,video/*,.m4a,.mp3,.wav,.flac,.ogg,.opus,.aac,.wma,.webm">
+                        </label>
+                        <input type="text" id="pasteInput" placeholder="...or tap here and press 'Paste'" style="text-align: center; color: #a1a1aa; font-size: 14px; background-color: transparent; border: 1px dashed #3f3f46; cursor: pointer; padding: 12px; border-radius: 8px; font-family: inherit; width: 100%;">
+                    </div>
                 </div>
 
                 <!-- 2. Audio Player & Trim Controls -->
@@ -755,6 +758,27 @@
                 return EMPTY;
             }
         }
+
+        // ── UI: File Paste Support ──
+        document.addEventListener('paste', (e) => {
+            const pasteInput = document.getElementById('pasteInput');
+            if (e.target === pasteInput) {
+                e.preventDefault();
+                pasteInput.blur();
+                pasteInput.value = '';
+            }
+
+            const file = e.clipboardData.files && e.clipboardData.files[0];
+            if (file) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                const audioInput = document.getElementById('audioFile');
+                audioInput.files = dt.files;
+                audioInput.dispatchEvent(new Event('change'));
+            } else if (e.target === pasteInput) {
+                showMessage("No audio file found in paste.", 'error');
+            }
+        });
 
         // ── UI: Audio File Selection & Tag Reading ──
         document.getElementById('audioFile').addEventListener('change', async function (e) {
