@@ -3,26 +3,174 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Trimmer & Tagger</title>
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Trim & Tag</title>
+
     <!-- iOS PWA Settings -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Trim & Tag">
     <meta name="theme-color" content="#09090b">
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- LameJS for converting to mp3 -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- LameJS for converting to MP3 -->
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
+    <!-- jsmediatags for reading existing tags -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.7/jsmediatags.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 
     <style>
+        /* ── Base & Reset ── */
+        html {
+            background-color: #09090b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #09090b;
+            color: #f4f4f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Safe area notch fill */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: env(safe-area-inset-top, 0);
+            background-color: #09090b;
+            z-index: 99999;
+            pointer-events: none;
+        }
+
+        ::selection {
+            background-color: #22c55e;
+            color: #000;
+        }
+
+        /* ── Header ── */
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            z-index: 10;
+        }
+
+        .back-link {
+            color: #a1a1aa;
+            text-decoration: none;
+            font-size: 20px;
+            padding: 20px;
+            margin: -20px;
+            display: flex;
+            align-items: center;
+            transition: color 0.2s;
+        }
+
+        .back-link:active {
+            color: #d4d4d8;
+        }
+
+        .header-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f4f4f5;
+        }
+
+        /* ── Main Container ── */
+        .main-wrap {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            width: 100%;
+        }
+
+        .card {
+            width: 100%;
+            max-width: 448px;
+            background-color: #18181b;
+            border: 1px solid #27272a;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            margin: 32px 0;
+        }
+
+        /* ── Title Block ── */
+        .title-block {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .title-icon {
+            font-size: 36px;
+            color: #22c55e;
+            margin-bottom: 8px;
+            display: inline-block;
+        }
+
+        .title-block h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .title-block p {
+            color: #a1a1aa;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        /* ── Sections ── */
+        .sections {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .section-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+        }
+
+        /* ── File Upload Buttons ── */
         input[type="file"] {
             display: none;
         }
 
         .file-label {
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 12px 16px;
+            background-color: #27272a;
+            border: 2px dashed #3f3f46;
+            border-radius: 12px;
             transition: all 0.2s ease;
         }
 
@@ -30,133 +178,466 @@
             transform: scale(0.98);
         }
 
-        /* Custom Audio Player Styling */
+        .file-label:hover {
+            border-color: #22c55e;
+            background-color: rgba(39, 39, 42, 0.8);
+        }
+
+        .file-label .icon {
+            font-size: 20px;
+            margin-right: 8px;
+            color: #a1a1aa;
+            transition: color 0.2s;
+        }
+
+        .file-label:hover .icon {
+            color: #22c55e;
+        }
+
+        .file-label .file-name {
+            color: #d4d4d8;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+        }
+
+        /* ── Trim Section ── */
+        .trim-section {
+            display: none;
+            background-color: rgba(9, 9, 11, 0.5);
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid #27272a;
+        }
+
+        .trim-section.visible {
+            display: block;
+        }
+
         audio {
-            border-radius: 0.75rem;
+            width: 100%;
+            border-radius: 12px;
             height: 40px;
+            margin-bottom: 16px;
         }
 
         audio::-webkit-media-controls-panel {
             background-color: #27272a;
-            /* zinc-800 */
         }
 
         audio::-webkit-media-controls-current-time-display,
         audio::-webkit-media-controls-time-remaining-display {
             color: #fff;
         }
+
+        .trim-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .trim-box {
+            background-color: #27272a;
+            padding: 12px;
+            border-radius: 12px;
+        }
+
+        .trim-box label {
+            display: block;
+            font-size: 11px;
+            color: #a1a1aa;
+            margin-bottom: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .trim-box input[type="number"] {
+            width: 100%;
+            background: transparent;
+            color: #fff;
+            font-family: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
+            font-size: 18px;
+            border: none;
+            outline: none;
+            padding: 0;
+            margin-bottom: 8px;
+            /* 16px minimum prevents iOS zoom — mono at 18px is fine */
+        }
+
+        .trim-btn {
+            width: 100%;
+            background-color: #3f3f46;
+            color: #f4f4f5;
+            border: none;
+            font-size: 12px;
+            padding: 6px 0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .trim-btn:hover {
+            background-color: #52525b;
+        }
+
+        .trim-btn i {
+            margin-right: 4px;
+        }
+
+        /* ── Cover Art & Details ── */
+        .details-section {
+            border-top: 1px solid #27272a;
+            padding-top: 24px;
+        }
+
+        .cover-row {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .cover-row .file-label {
+            flex: 1;
+        }
+
+        .cover-row .file-label .file-name {
+            font-size: 14px;
+            max-width: 120px;
+        }
+
+        .cover-preview-wrap {
+            display: none;
+            height: 48px;
+            width: 48px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #3f3f46;
+            flex-shrink: 0;
+        }
+
+        .cover-preview-wrap.visible {
+            display: block;
+        }
+
+        .cover-preview-wrap img {
+            height: 100%;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .tag-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .tag-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .tag-input {
+            width: 100%;
+            background-color: #27272a;
+            border: 1px solid #3f3f46;
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #fff;
+            font-size: 16px;
+            /* 16px prevents iOS zoom */
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .tag-input::placeholder {
+            color: #71717a;
+        }
+
+        .tag-input:focus {
+            border-color: #22c55e;
+        }
+
+        /* ── Action Button ── */
+        .action-btn {
+            width: 100%;
+            margin-top: 8px;
+            background-color: #22c55e;
+            color: #09090b;
+            font-weight: 700;
+            font-size: 16px;
+            font-family: inherit;
+            padding: 16px 24px;
+            border: none;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .action-btn:active {
+            transform: scale(0.98);
+        }
+
+        .action-btn:hover {
+            background-color: #4ade80;
+        }
+
+        .action-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .action-btn i {
+            font-size: 20px;
+            margin-right: 8px;
+        }
+
+        /* ── Message Box ── */
+        .msg-box {
+            display: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            font-weight: 500;
+            margin-top: 16px;
+            word-break: break-word;
+        }
+
+        .msg-box.visible {
+            display: block;
+        }
+
+        .msg-box.error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .msg-box.info {
+            background-color: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+
+        .msg-box.success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: #22c55e;
+        }
+
+        /* ── Result Panel (shown after processing) ── */
+        .result-panel {
+            display: none;
+            margin-top: 16px;
+            padding: 16px;
+            background-color: rgba(34, 197, 94, 0.05);
+            border: 1px solid rgba(34, 197, 94, 0.2);
+            border-radius: 16px;
+            text-align: center;
+        }
+
+        .result-panel.visible {
+            display: block;
+        }
+
+        .result-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+            text-align: left;
+        }
+
+        .result-cover {
+            width: 56px;
+            height: 56px;
+            border-radius: 8px;
+            object-fit: cover;
+            background-color: #27272a;
+            flex-shrink: 0;
+        }
+
+        .result-info h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f4f4f5;
+            margin-bottom: 2px;
+        }
+
+        .result-info p {
+            font-size: 13px;
+            color: #a1a1aa;
+        }
+
+        .result-audio {
+            width: 100%;
+            border-radius: 8px;
+            height: 36px;
+            margin-bottom: 12px;
+        }
+
+        .result-audio::-webkit-media-controls-panel {
+            background-color: #27272a;
+        }
+
+        .result-audio::-webkit-media-controls-current-time-display,
+        .result-audio::-webkit-media-controls-time-remaining-display {
+            color: #fff;
+        }
+
+        .save-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            background-color: #22c55e;
+            color: #09090b;
+        }
+
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+
+        .save-btn:hover {
+            background-color: #4ade80;
+        }
+
+        .save-hint {
+            font-size: 12px;
+            color: #71717a;
+            margin-top: 8px;
+        }
+
+        /* ── Spinner animation ── */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinning {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 
-<body
-    class="bg-zinc-950 text-zinc-100 min-h-screen flex flex-col font-sans selection:bg-green-500 selection:text-black">
+<body>
 
     <!-- HEADER -->
-    <header class="w-full flex justify-between items-center p-5 pt-[max(20px,env(safe-area-inset-top))] z-10">
-        <a href="index.html"
-            class="text-zinc-400 hover:text-zinc-300 text-xl p-5 -m-5 flex items-center transition-colors">&larr;</a>
-        <span class="text-base font-semibold text-zinc-100">Trim & Tag</span>
+    <header class="header">
+        <a href="index.html" class="back-link">&larr;</a>
+        <span class="header-title">Trim & Tag</span>
     </header>
 
-    <div class="flex-1 flex items-center justify-center p-4 w-full">
-        <div class="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl my-8">
+    <div class="main-wrap">
+        <div class="card">
 
-            <div class="text-center mb-6">
-                <i class="ph ph-scissors text-4xl text-green-500 mb-2 inline-block"></i>
-                <h1 class="text-2xl font-bold tracking-tight">Trimmer & Tagger</h1>
-                <p class="text-zinc-400 text-sm mt-1">Slice, Tag, and Convert to MP3</p>
+            <div class="title-block">
+                <i class="ph ph-scissors title-icon"></i>
+                <h1>Trimmer & Tagger</h1>
+                <p>Slice, Tag, and Convert to MP3</p>
             </div>
 
-            <div class="space-y-6">
+            <div class="sections">
                 <!-- 1. Audio File Upload -->
                 <div>
-                    <label class="block text-sm font-medium text-zinc-400 mb-2">1. Select Audio (M4A/MP3)</label>
-                    <label
-                        class="file-label flex items-center justify-center w-full px-4 py-3 bg-zinc-800 border-2 border-dashed border-zinc-700 rounded-xl hover:border-green-500 hover:bg-zinc-800/80 group">
-                        <i class="ph ph-upload-simple text-xl mr-2 text-zinc-400 group-hover:text-green-500"></i>
-                        <span id="audioFileName" class="text-zinc-300 font-medium truncate max-w-[200px]">Choose a
-                            file...</span>
-                        <!-- Removed the strict accept attribute so iOS doesn't gray out your MP3! -->
-                        <input type="file" id="audioFile">
+                    <label class="section-label">1. Select Audio (Any Format)</label>
+                    <label class="file-label" id="audioFileLabel">
+                        <i class="ph ph-upload-simple icon"></i>
+                        <span id="audioFileName" class="file-name">Choose a file...</span>
+                        <input type="file" id="audioFile" accept="audio/*,video/*,.m4a,.mp3,.wav,.flac,.ogg,.opus,.aac,.wma,.webm">
                     </label>
                 </div>
 
-                <!-- 2. Audio Player & Trim Controls (Hidden until file is loaded) -->
-                <div id="trimSection" class="hidden bg-zinc-950/50 p-4 rounded-2xl border border-zinc-800">
-                    <label class="block text-sm font-medium text-zinc-400 mb-2">2. Find Your Cut Points</label>
-
-                    <audio id="audioPreview" controls class="w-full mb-4"></audio>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <!-- Start Time -->
-                        <div class="bg-zinc-800 p-3 rounded-xl">
-                            <label class="block text-xs text-zinc-400 mb-1 font-bold">START TIME (Sec)</label>
-                            <input type="number" id="startTime" value="0.00" step="0.1" min="0"
-                                class="w-full bg-transparent text-white font-mono text-lg border-none focus:ring-0 p-0 mb-2 outline-none">
-                            <button onclick="setStartTime()"
-                                class="w-full bg-zinc-700 hover:bg-zinc-600 text-xs py-1.5 rounded-lg transition-colors flex items-center justify-center">
-                                <i class="ph ph-crosshair mr-1"></i> Get from Player
+                <!-- 2. Audio Player & Trim Controls -->
+                <div id="trimSection" class="trim-section">
+                    <label class="section-label">2. Find Your Cut Points</label>
+                    <audio id="audioPreview" controls></audio>
+                    <div class="trim-grid">
+                        <div class="trim-box">
+                            <label>Start Time (Sec)</label>
+                            <input type="number" id="startTime" value="0.00" step="0.1" min="0">
+                            <button onclick="window.setStartTime()" class="trim-btn">
+                                <i class="ph ph-crosshair"></i> Get from Player
                             </button>
                         </div>
-
-                        <!-- End Time -->
-                        <div class="bg-zinc-800 p-3 rounded-xl">
-                            <label class="block text-xs text-zinc-400 mb-1 font-bold">END TIME (Sec)</label>
-                            <input type="number" id="endTime" step="0.1" min="0"
-                                class="w-full bg-transparent text-white font-mono text-lg border-none focus:ring-0 p-0 mb-2 outline-none">
-                            <button onclick="setEndTime()"
-                                class="w-full bg-zinc-700 hover:bg-zinc-600 text-xs py-1.5 rounded-lg transition-colors flex items-center justify-center">
-                                <i class="ph ph-crosshair mr-1"></i> Get from Player
+                        <div class="trim-box">
+                            <label>End Time (Sec)</label>
+                            <input type="number" id="endTime" step="0.1" min="0">
+                            <button onclick="window.setEndTime()" class="trim-btn">
+                                <i class="ph ph-crosshair"></i> Get from Player
                             </button>
                         </div>
                     </div>
                 </div>
 
                 <!-- 3. Cover Art & Details -->
-                <div class="border-t border-zinc-800 pt-6">
-                    <label class="block text-sm font-medium text-zinc-400 mb-2">3. Cover Art & Details</label>
+                <div class="details-section">
+                    <label class="section-label">3. Cover Art & Details</label>
 
-                    <div class="flex items-center gap-4 mb-3">
-                        <label
-                            class="file-label flex-1 flex items-center justify-center px-4 py-3 bg-zinc-800 border-2 border-dashed border-zinc-700 rounded-xl hover:border-green-500 hover:bg-zinc-800/80 group">
-                            <i class="ph ph-image text-xl mr-2 text-zinc-400 group-hover:text-green-500"></i>
-                            <span id="imageFileName"
-                                class="text-zinc-300 font-medium text-sm truncate max-w-[120px]">Cover
-                                Image...</span>
-                            <!-- Kept image accept attribute so it defaults to your photo gallery -->
+                    <div class="cover-row">
+                        <label class="file-label">
+                            <i class="ph ph-image icon"></i>
+                            <span id="imageFileName" class="file-name">Cover Image...</span>
                             <input type="file" id="coverImage" accept="image/jpeg, image/png">
                         </label>
-                        <div id="imagePreviewContainer"
-                            class="hidden h-12 w-12 rounded-lg overflow-hidden border border-zinc-700 shrink-0">
-                            <img id="imagePreview" class="h-full w-full object-cover" src="" alt="Cover preview">
+                        <div id="imagePreviewContainer" class="cover-preview-wrap">
+                            <img id="imagePreview" src="" alt="Cover preview">
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-3">
-                        <div class="col-span-2">
-                            <input type="text" id="songTitle" placeholder="Song Title"
-                                class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-green-500 transition-colors">
+                    <div class="tag-grid">
+                        <div class="full-width">
+                            <input type="text" id="songTitle" placeholder="Song Title" class="tag-input">
                         </div>
                         <div>
-                            <input type="text" id="artistName" placeholder="Artist"
-                                class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-green-500 transition-colors">
+                            <input type="text" id="artistName" placeholder="Artist" class="tag-input">
                         </div>
                         <div>
-                            <input type="text" id="albumName" placeholder="Album"
-                                class="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-green-500 transition-colors">
+                            <input type="text" id="albumName" placeholder="Album" class="tag-input">
                         </div>
                     </div>
                 </div>
 
                 <!-- 4. Action Button -->
-                <button onclick="window.processAudio()" id="downloadBtn"
-                    class="w-full mt-2 bg-green-500 hover:bg-green-400 text-zinc-950 font-bold py-4 px-6 rounded-xl flex items-center justify-center transition-all transform active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed">
-                    <i class="ph ph-scissors text-xl mr-2"></i>
+                <button onclick="window.processAudio()" id="downloadBtn" class="action-btn">
+                    <i class="ph ph-scissors"></i>
                     <span>Trim & Download MP3</span>
                 </button>
 
                 <!-- Message Display -->
-                <div id="messageBox" class="hidden p-3 rounded-lg text-sm text-center font-medium mt-4 break-words">
+                <div id="messageBox" class="msg-box"></div>
+
+                <!-- Result Panel (appears after processing) -->
+                <div id="resultPanel" class="result-panel">
+                    <div class="result-meta">
+                        <img id="resultCover" class="result-cover" src="" alt="">
+                        <div class="result-info">
+                            <h3 id="resultTitle"></h3>
+                            <p id="resultArtist"></p>
+                        </div>
+                    </div>
+                    <audio id="resultAudio" controls class="result-audio"></audio>
+                    <button id="saveBtn" class="save-btn">
+                        <i class="ph ph-download-simple"></i>
+                        <span id="saveBtnText">Save File</span>
+                    </button>
+                    <p class="save-hint" id="saveHint"></p>
                 </div>
             </div>
         </div>
@@ -167,18 +648,108 @@
 
         let audioDuration = 0;
 
-        // UI: Audio File Selection & Player Setup
-        document.getElementById('audioFile').addEventListener('change', function (e) {
+        // Store original tags read from the uploaded file
+        let originalTags = { title: '', artist: '', album: '' };
+        let originalCoverData = null; // { data: ArrayBuffer, format: string }
+        let userReplacedCover = false; // Track if user explicitly chose a new cover
+
+        // Detect iOS standalone mode
+        const isStandalone = window.navigator.standalone === true
+            || window.matchMedia('(display-mode: standalone)').matches;
+
+        // ── Read existing tags from uploaded file ──
+        function readExistingTags(file) {
+            return new Promise((resolve) => {
+                if (typeof jsmediatags === 'undefined') {
+                    resolve({ title: '', artist: '', album: '', picture: null });
+                    return;
+                }
+                jsmediatags.read(file, {
+                    onSuccess: function (result) {
+                        const tags = result.tags || {};
+                        const info = {
+                            title: tags.title || '',
+                            artist: tags.artist || '',
+                            album: tags.album || '',
+                            picture: null
+                        };
+                        // Extract cover art if present
+                        if (tags.picture) {
+                            const pic = tags.picture;
+                            const byteArray = new Uint8Array(pic.data);
+                            info.picture = {
+                                data: byteArray.buffer,
+                                format: pic.format || 'image/jpeg'
+                            };
+                        }
+                        resolve(info);
+                    },
+                    onError: function () {
+                        // Tags unreadable — that's fine, we just proceed with blanks
+                        resolve({ title: '', artist: '', album: '', picture: null });
+                    }
+                });
+            });
+        }
+
+        // ── UI: Audio File Selection & Tag Reading ──
+        document.getElementById('audioFile').addEventListener('change', async function (e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Basic check so they don't upload a PDF
-            if (file.name.endsWith('.pdf') || file.type.startsWith('image/')) {
+            // Basic check so they don't upload a PDF or image
+            if (file.name.endsWith('.pdf') || (file.type.startsWith('image/') && !file.type.includes('gif'))) {
                 showMessage("That doesn't look like an audio file!", 'error');
                 return;
             }
 
             document.getElementById('audioFileName').textContent = file.name;
+
+            // Read existing tags from the file
+            showMessage('Reading file tags...', 'info');
+            const tags = await readExistingTags(file);
+            originalTags.title = tags.title;
+            originalTags.artist = tags.artist;
+            originalTags.album = tags.album;
+
+            // Pre-fill the form fields with existing tags
+            const titleField = document.getElementById('songTitle');
+            const artistField = document.getElementById('artistName');
+            const albumField = document.getElementById('albumName');
+
+            if (tags.title) {
+                titleField.value = tags.title;
+                titleField.placeholder = tags.title;
+            } else {
+                titleField.value = '';
+                titleField.placeholder = 'Song Title';
+            }
+            if (tags.artist) {
+                artistField.value = tags.artist;
+                artistField.placeholder = tags.artist;
+            } else {
+                artistField.value = '';
+                artistField.placeholder = 'Artist';
+            }
+            if (tags.album) {
+                albumField.value = tags.album;
+                albumField.placeholder = tags.album;
+            } else {
+                albumField.value = '';
+                albumField.placeholder = 'Album';
+            }
+
+            // Show existing cover art if present
+            if (tags.picture && !userReplacedCover) {
+                originalCoverData = tags.picture;
+                const blob = new Blob([tags.picture.data], { type: tags.picture.format });
+                const url = URL.createObjectURL(blob);
+                document.getElementById('imagePreview').src = url;
+                document.getElementById('imagePreviewContainer').classList.add('visible');
+                document.getElementById('imageFileName').textContent = 'Embedded art';
+            } else {
+                originalCoverData = null;
+            }
 
             // Set up the preview player
             const player = document.getElementById('audioPreview');
@@ -188,12 +759,15 @@
             player.onloadedmetadata = function () {
                 audioDuration = player.duration;
                 document.getElementById('endTime').value = audioDuration.toFixed(2);
-                document.getElementById('trimSection').classList.remove('hidden');
+                document.getElementById('trimSection').classList.add('visible');
                 showMessage('File ready. Play the track to find your cut points.', 'info');
             };
+
+            // Hide any previous result panel
+            document.getElementById('resultPanel').classList.remove('visible');
         });
 
-        // UI: Cover Image Handling
+        // ── UI: Cover Image Handling ──
         document.getElementById('coverImage').addEventListener('change', function (e) {
             const file = e.target.files[0];
             const fileNameSpan = document.getElementById('imageFileName');
@@ -201,30 +775,29 @@
             const previewImg = document.getElementById('imagePreview');
 
             if (file) {
+                userReplacedCover = true;
                 fileNameSpan.textContent = file.name;
                 const reader = new FileReader();
                 reader.onload = function (event) {
                     previewImg.src = event.target.result;
-                    previewContainer.classList.remove('hidden');
+                    previewContainer.classList.add('visible');
                 }
                 reader.readAsDataURL(file);
             } else {
                 fileNameSpan.textContent = 'Cover Image...';
-                previewContainer.classList.add('hidden');
+                previewContainer.classList.remove('visible');
+                userReplacedCover = false;
             }
         });
 
-        // UI: Messaging
+        // ── UI: Messaging ──
         function showMessage(text, type) {
             const box = document.getElementById('messageBox');
             box.textContent = text;
-            box.classList.remove('hidden', 'bg-red-500/10', 'text-red-500', 'bg-green-500/10', 'text-green-500', 'bg-blue-500/10', 'text-blue-500');
-            if (type === 'error') box.classList.add('bg-red-500/10', 'text-red-500');
-            else if (type === 'info') box.classList.add('bg-blue-500/10', 'text-blue-500');
-            else box.classList.add('bg-green-500/10', 'text-green-500');
+            box.className = 'msg-box visible ' + type;
         }
 
-        // Expose functions globally for inline HTML onclick attributes
+        // ── Expose functions globally for onclick ──
         window.setStartTime = function () {
             const player = document.getElementById('audioPreview');
             document.getElementById('startTime').value = player.currentTime.toFixed(2);
@@ -235,14 +808,21 @@
             document.getElementById('endTime').value = player.currentTime.toFixed(2);
         };
 
+        // ── Main Processing ──
         window.processAudio = async function () {
             const audioInput = document.getElementById('audioFile').files[0];
             const imageInput = document.getElementById('coverImage').files[0];
-            const title = document.getElementById('songTitle').value || 'Unknown Title';
-            const artist = document.getElementById('artistName').value || 'Unknown Artist';
-            const album = document.getElementById('albumName').value || 'Unknown Album';
-            const btn = document.getElementById('downloadBtn');
 
+            // Use field value if present, otherwise fall back to original tag, otherwise empty
+            const titleField = document.getElementById('songTitle').value;
+            const artistField = document.getElementById('artistName').value;
+            const albumField = document.getElementById('albumName').value;
+
+            const title = titleField || originalTags.title || '';
+            const artist = artistField || originalTags.artist || '';
+            const album = albumField || originalTags.album || '';
+
+            const btn = document.getElementById('downloadBtn');
             const startSec = parseFloat(document.getElementById('startTime').value) || 0;
             const endSec = parseFloat(document.getElementById('endTime').value) || audioDuration;
 
@@ -261,7 +841,7 @@
             try {
                 // 1. Read & Decode Audio
                 showMessage("Reading file... (Do not close tab)", 'info');
-                btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl mr-2"></i><span>Reading...</span>';
+                btn.innerHTML = '<i class="ph ph-spinner spinning"></i><span>Reading...</span>';
                 const arrayBuffer = await audioInput.arrayBuffer();
 
                 showMessage("Decoding audio...", 'info');
@@ -278,22 +858,18 @@
                     throw new Error(`Decode Failed: ${decodeErr.message}`);
                 }
 
-                // 2. Slice the Audio Data based on Trim Inputs
+                // 2. Slice the Audio Data
                 const sampleRate = audioBuffer.sampleRate;
                 const channels = Math.min(2, audioBuffer.numberOfChannels);
-
-                // Calculate exactly which array items to slice out
                 const startOffset = Math.floor(Math.max(0, startSec) * sampleRate);
                 const endOffset = Math.floor(Math.min(endSec, audioBuffer.duration) * sampleRate);
 
-                // Extract only the selected portion
                 const fullLeft = audioBuffer.getChannelData(0);
                 const fullRight = channels > 1 ? audioBuffer.getChannelData(1) : null;
-
                 const left = fullLeft.subarray(startOffset, endOffset);
                 const right = channels > 1 ? fullRight.subarray(startOffset, endOffset) : null;
 
-                // 3. Convert Sliced Portion to MP3
+                // 3. Convert to MP3
                 showMessage("Converting slice to MP3...", 'info');
                 await new Promise(r => setTimeout(r, 50));
 
@@ -328,7 +904,7 @@
 
                     if (i % (sampleBlockSize * 150) === 0) {
                         const progress = Math.round((i / left.length) * 100);
-                        btn.innerHTML = `<i class="ph ph-spinner animate-spin text-xl mr-2"></i><span>Converting Slice... ${progress}%</span>`;
+                        btn.innerHTML = `<i class="ph ph-spinner spinning"></i><span>Converting... ${progress}%</span>`;
                         await new Promise(r => setTimeout(r, 0));
                     }
                 }
@@ -344,16 +920,19 @@
                     offset += chunk.length;
                 }
 
-                // 4. Tag the new MP3
-                showMessage("Applying cover art & tags...", 'info');
-                btn.innerHTML = '<i class="ph ph-spinner animate-spin text-xl mr-2"></i><span>Tagging...</span>';
+                // 4. Tag the MP3
+                showMessage("Applying tags...", 'info');
+                btn.innerHTML = '<i class="ph ph-spinner spinning"></i><span>Tagging...</span>';
                 await new Promise(r => setTimeout(r, 50));
 
                 const writer = new ID3Writer(combinedMp3.buffer);
-                writer.setFrame('TIT2', title)
-                    .setFrame('TPE1', [artist])
-                    .setFrame('TALB', album);
 
+                // Only write tags that have values
+                if (title) writer.setFrame('TIT2', title);
+                if (artist) writer.setFrame('TPE1', [artist]);
+                if (album) writer.setFrame('TALB', album);
+
+                // Cover art: user-selected > original embedded > none
                 if (imageInput) {
                     const imageBuffer = await imageInput.arrayBuffer();
                     writer.setFrame('APIC', {
@@ -361,30 +940,117 @@
                         data: imageBuffer,
                         description: 'Cover'
                     });
+                } else if (originalCoverData) {
+                    writer.setFrame('APIC', {
+                        type: 3,
+                        data: originalCoverData.data,
+                        description: 'Cover'
+                    });
                 }
 
                 writer.addTag();
-                const taggedBlob = new Blob([writer.arrayBuffer], { type: 'audio/mp3' });
-                const url = URL.createObjectURL(taggedBlob);
+                const taggedBlob = new Blob([writer.arrayBuffer], { type: 'audio/mpeg' });
 
-                // 5. Trigger download
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = `${title} - ${artist}.mp3`.replace(/Unknown/g, '').trim() || 'Trimmed_Track.mp3';
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-                URL.revokeObjectURL(url);
+                // Build filename
+                let fileName = '';
+                if (title && artist) {
+                    fileName = `${title} - ${artist}.mp3`;
+                } else if (title) {
+                    fileName = `${title}.mp3`;
+                } else {
+                    // Use original filename with .mp3 extension
+                    const origName = audioInput.name.replace(/\.[^.]+$/, '');
+                    fileName = `${origName}.mp3`;
+                }
 
-                showMessage("Success! File trimmed, tagged, and downloaded.", 'success');
+                // 5. Show result panel
+                const blobUrl = URL.createObjectURL(taggedBlob);
+                showResultPanel(blobUrl, fileName, title, artist, imageInput);
+
+                showMessage("Done! Your file is ready.", 'success');
+
             } catch (error) {
                 showMessage(`ERROR: ${error.message || error}`, 'error');
                 console.error(error);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="ph ph-scissors text-xl mr-2"></i><span>Trim & Download MP3</span>';
+                btn.innerHTML = '<i class="ph ph-scissors"></i><span>Trim & Download MP3</span>';
             }
+        };
+
+        // ── Result Panel & Download Logic ──
+        function showResultPanel(blobUrl, fileName, title, artist, imageInput) {
+            const panel = document.getElementById('resultPanel');
+            const resultCover = document.getElementById('resultCover');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultArtist = document.getElementById('resultArtist');
+            const resultAudio = document.getElementById('resultAudio');
+            const saveBtn = document.getElementById('saveBtn');
+            const saveBtnText = document.getElementById('saveBtnText');
+            const saveHint = document.getElementById('saveHint');
+
+            // Show metadata
+            resultTitle.textContent = title || fileName;
+            resultArtist.textContent = artist || '';
+
+            // Show cover art
+            if (imageInput) {
+                const reader = new FileReader();
+                reader.onload = (e) => { resultCover.src = e.target.result; };
+                reader.readAsDataURL(imageInput);
+                resultCover.style.display = 'block';
+            } else if (originalCoverData) {
+                const blob = new Blob([originalCoverData.data], { type: originalCoverData.format });
+                resultCover.src = URL.createObjectURL(blob);
+                resultCover.style.display = 'block';
+            } else {
+                resultCover.style.display = 'none';
+            }
+
+            // Playback preview of the result
+            resultAudio.src = blobUrl;
+
+            // Configure save button based on context
+            if (isStandalone) {
+                // iOS standalone: can't use <a download>, open in Safari instead
+                saveBtnText.textContent = 'Open in Safari to Save';
+                saveHint.textContent = 'Tap and hold the player in Safari → "Save to Files"';
+                saveBtn.onclick = function () {
+                    // Open the blob URL — iOS will open it in Safari
+                    window.open(blobUrl, '_blank');
+                };
+            } else {
+                // Normal browser: use <a download>
+                saveBtnText.textContent = 'Download ' + fileName;
+                saveHint.textContent = '';
+                saveBtn.onclick = function () {
+                    const a = document.createElement('a');
+                    a.href = blobUrl;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+            }
+
+            panel.classList.add('visible');
+
+            // Scroll to the result
+            setTimeout(() => {
+                panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 100);
         }
+    </script>
+
+    <!-- Standalone navigation fix: prevent links kicking to Safari -->
+    <script>
+        document.addEventListener("click", function (e) {
+            var a = e.target.closest("a");
+            if (a && a.href && a.href.includes(window.location.hostname)) {
+                e.preventDefault();
+                window.location.href = a.href;
+            }
+        });
     </script>
 </body>
 
