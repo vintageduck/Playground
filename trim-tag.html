@@ -555,14 +555,11 @@
                 <!-- 1. Audio File Upload -->
                 <div>
                     <label class="section-label">1. Select Audio (Any Format)</label>
-                    <div style="display: flex; gap: 8px; flex-direction: column;">
-                        <label class="file-label" id="audioFileLabel">
-                            <i class="ph ph-upload-simple icon"></i>
-                            <span id="audioFileName" class="file-name">Choose a file...</span>
-                            <input type="file" id="audioFile" accept="audio/*,video/*,.m4a,.mp3,.wav,.flac,.ogg,.opus,.aac,.wma,.webm">
-                        </label>
-                        <input type="text" id="pasteInput" placeholder="...or tap here and press 'Paste'" style="text-align: center; color: #a1a1aa; font-size: 14px; background-color: transparent; border: 1px dashed #3f3f46; cursor: pointer; padding: 12px; border-radius: 8px; font-family: inherit; width: 100%;">
-                    </div>
+                    <label class="file-label" id="audioFileLabel">
+                        <i class="ph ph-upload-simple icon"></i>
+                        <span id="audioFileName" class="file-name">Choose a file...</span>
+                        <input type="file" id="audioFile" accept="audio/*,video/*,.m4a,.mp3,.wav,.flac,.ogg,.opus,.aac,.wma,.webm">
+                    </label>
                 </div>
 
                 <!-- 2. Audio Player & Trim Controls -->
@@ -758,49 +755,6 @@
                 return EMPTY;
             }
         }
-
-        // ── UI: File Paste Support ──
-        document.addEventListener('paste', (e) => {
-            const pasteInput = document.getElementById('pasteInput');
-            if (e.target === pasteInput) {
-                e.preventDefault();
-                pasteInput.blur();
-                pasteInput.value = '';
-            }
-
-            let file = (e.clipboardData.files && e.clipboardData.files.length > 0) ? e.clipboardData.files[0] : null;
-
-            // Fallback: search items manually just in case Safari hides it from .files
-            if (!file && e.clipboardData.items) {
-                for (let i = 0; i < e.clipboardData.items.length; i++) {
-                    const item = e.clipboardData.items[i];
-                    if (item.kind === 'file') {
-                        file = item.getAsFile();
-                        if (file) break;
-                    }
-                }
-            }
-
-            if (file) {
-                const dt = new DataTransfer();
-                dt.items.add(file);
-                const audioInput = document.getElementById('audioFile');
-                audioInput.files = dt.files;
-                audioInput.dispatchEvent(new Event('change'));
-            } else if (e.target === pasteInput) {
-                const types = e.clipboardData.types ? Array.from(e.clipboardData.types).join(', ') : 'none';
-                let itemsStr = '';
-                if (e.clipboardData.items) {
-                    for(let i=0; i<e.clipboardData.items.length; i++) {
-                        itemsStr += e.clipboardData.items[i].kind + ':' + e.clipboardData.items[i].type + ' ';
-                    }
-                }
-                const text = e.clipboardData.getData('text/plain');
-                const textLen = text ? text.length + ' chars' : 'none';
-                
-                showMessage(`Failed to read file from clipboard. Safari saw: Types [${types}], Items [${itemsStr}], Text [${textLen}]`, 'error');
-            }
-        });
 
         // ── UI: Audio File Selection & Tag Reading ──
         document.getElementById('audioFile').addEventListener('change', async function (e) {
