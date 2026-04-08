@@ -965,7 +965,7 @@
 
                 // 5. Show result panel
                 const blobUrl = URL.createObjectURL(taggedBlob);
-                showResultPanel(blobUrl, fileName, title, artist, imageInput);
+                showResultPanel(taggedBlob, blobUrl, fileName, title, artist, imageInput);
 
                 showMessage("Done! Your file is ready.", 'success');
 
@@ -979,7 +979,7 @@
         };
 
         // ── Result Panel & Download Logic ──
-        function showResultPanel(blobUrl, fileName, title, artist, imageInput) {
+        function showResultPanel(taggedBlob, blobUrl, fileName, title, artist, imageInput) {
             const panel = document.getElementById('resultPanel');
             const resultCover = document.getElementById('resultCover');
             const resultTitle = document.getElementById('resultTitle');
@@ -1010,17 +1010,26 @@
             // Playback preview of the result
             resultAudio.src = blobUrl;
 
-            // Configure save button based on context
-            if (isStandalone) {
-                // iOS standalone: can't use <a download>, open in Safari instead
-                saveBtnText.textContent = 'Open in Safari to Save';
-                saveHint.textContent = 'Tap and hold the player in Safari → "Save to Files"';
-                saveBtn.onclick = function () {
-                    // Open the blob URL — iOS will open it in Safari
-                    window.open(blobUrl, '_blank');
+            // Configure save button — prefer Web Share API, fall back to <a download>
+            const mp3File = new File([taggedBlob], fileName, { type: 'audio/mpeg' });
+            const canUseShareAPI = navigator.canShare && navigator.canShare({ files: [mp3File] });
+
+            if (canUseShareAPI) {
+                saveBtnText.textContent = 'Save or Share';
+                saveHint.textContent = 'Opens the share sheet — tap "Save to Files" to add to your library';
+                saveBtn.onclick = async function () {
+                    try {
+                        await navigator.share({
+                            files: [mp3File],
+                            title: fileName
+                        });
+                    } catch (err) {
+                        // User cancelled — not an error
+                        if (err.name !== 'AbortError') console.error(err);
+                    }
                 };
             } else {
-                // Normal browser: use <a download>
+                // Fallback: standard <a download> for desktop / non-supporting browsers
                 saveBtnText.textContent = 'Download ' + fileName;
                 saveHint.textContent = '';
                 saveBtn.onclick = function () {
