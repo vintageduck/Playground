@@ -660,19 +660,36 @@
         // ── Read existing tags from uploaded file ──
         function readExistingTags(file) {
             return new Promise((resolve) => {
-                if (typeof jsmediatags === 'undefined') {
+                const jsmt = window.jsmediatags;
+                if (!jsmt) {
+                    console.error("jsmediatags is not loaded on window.");
                     resolve({ title: '', artist: '', album: '', picture: null });
                     return;
                 }
-                jsmediatags.read(file, {
+
+                jsmt.read(file, {
                     onSuccess: function (result) {
+                        console.log("Raw tags read from file:", result.tags);
                         const tags = result.tags || {};
+                        
+                        // ID3 tags can sometimes be weird. Check shortcuts first, then fallback to raw frames.
+                        const safeExtract = (shortcut, frameCode) => {
+                            if (tags[shortcut]) return tags[shortcut];
+                            if (tags[frameCode] && tags[frameCode].data) {
+                                // Sometimes raw frames are stored as arrays or objects
+                                const data = tags[frameCode].data;
+                                return Array.isArray(data) ? data.join(', ') : data;
+                            }
+                            return '';
+                        };
+
                         const info = {
-                            title: tags.title || '',
-                            artist: tags.artist || '',
-                            album: tags.album || '',
+                            title: safeExtract('title', 'TIT2'),
+                            artist: safeExtract('artist', 'TPE1'),
+                            album: safeExtract('album', 'TALB'),
                             picture: null
                         };
+
                         // Extract cover art if present
                         if (tags.picture) {
                             const pic = tags.picture;
@@ -681,11 +698,21 @@
                                 data: byteArray.buffer,
                                 format: pic.format || 'image/jpeg'
                             };
+                        } else if (tags.APIC && tags.APIC.data && tags.APIC.data.data) {
+                            // Fallback for raw APIC frame
+                            const pic = tags.APIC.data;
+                            const byteArray = new Uint8Array(pic.data);
+                            info.picture = {
+                                data: byteArray.buffer,
+                                format: pic.format || 'image/jpeg'
+                            };
                         }
+                        
                         resolve(info);
                     },
-                    onError: function () {
-                        // Tags unreadable — that's fine, we just proceed with blanks
+                    onError: function (error) {
+                        console.error("jsmediatags failed to parse tags:", error);
+                        // Tags unreadable — that's fine, we proceed with blanks
                         resolve({ title: '', artist: '', album: '', picture: null });
                     }
                 });
