@@ -839,134 +839,135 @@
             btn.disabled = true;
 
             try {
-                // 1. Read & Decode Audio
-                showMessage("Reading file... (Do not close tab)", 'info');
                 btn.innerHTML = '<i class="ph ph-spinner spinning"></i><span>Reading...</span>';
+                showMessage("Reading file...", 'info');
                 const arrayBuffer = await audioInput.arrayBuffer();
 
-                showMessage("Decoding audio...", 'info');
-                let audioBuffer;
-                try {
-                    const AudioContext = window.AudioContext || window.webkitAudioContext;
-                    const audioContext = new AudioContext();
-                    audioBuffer = await new Promise((resolve, reject) => {
-                        audioContext.decodeAudioData(arrayBuffer, resolve,
-                            (e) => reject(new Error(e ? (e.message || e.name) : "Format rejected"))
-                        );
-                    });
-                } catch (decodeErr) {
-                    throw new Error(`Decode Failed: ${decodeErr.message}`);
-                }
+                // ── Fast path: MP3 with no trim needed ──
+                // No decode, no re-encode, just slap new tags on the original bytes.
+                const isMp3 = audioInput.type === 'audio/mpeg'
+                    || audioInput.name.toLowerCase().endsWith('.mp3');
+                const noTrim = Math.abs(startSec) < 0.01
+                    && Math.abs(endSec - audioDuration) < 0.5;
 
-                // 2. Slice the Audio Data
-                const sampleRate = audioBuffer.sampleRate;
-                const channels = Math.min(2, audioBuffer.numberOfChannels);
-                const startOffset = Math.floor(Math.max(0, startSec) * sampleRate);
-                const endOffset = Math.floor(Math.min(endSec, audioBuffer.duration) * sampleRate);
+                let mp3Buffer; // final ArrayBuffer to tag
 
-                const fullLeft = audioBuffer.getChannelData(0);
-                const fullRight = channels > 1 ? audioBuffer.getChannelData(1) : null;
-                const left = fullLeft.subarray(startOffset, endOffset);
-                const right = channels > 1 ? fullRight.subarray(startOffset, endOffset) : null;
+                if (isMp3 && noTrim) {
+                    // Already MP3, nothing to trim — skip decode/encode entirely
+                    showMessage("MP3 detected — skipping re-encode...", 'info');
+                    await new Promise(r => setTimeout(r, 30));
+                    mp3Buffer = arrayBuffer;
 
-                // 3. Convert to MP3
-                showMessage("Converting slice to MP3...", 'info');
-                await new Promise(r => setTimeout(r, 50));
+                } else {
+                    // ── Slow path: decode → slice → LameJS encode ──
+                    showMessage("Decoding audio...", 'info');
+                    let audioBuffer;
+                    try {
+                        const AudioContext = window.AudioContext || window.webkitAudioContext;
+                        const audioContext = new AudioContext();
+                        audioBuffer = await new Promise((resolve, reject) => {
+                            audioContext.decodeAudioData(arrayBuffer, resolve,
+                                (e) => reject(new Error(e ? (e.message || e.name) : "Format rejected"))
+                            );
+                        });
+                    } catch (decodeErr) {
+                        throw new Error(`Decode Failed: ${decodeErr.message}`);
+                    }
 
-                const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 192);
-                const sampleBlockSize = 1152;
-                let mp3Data = [];
+                    const sampleRate = audioBuffer.sampleRate;
+                    const channels = Math.min(2, audioBuffer.numberOfChannels);
+                    const startOffset = Math.floor(Math.max(0, startSec) * sampleRate);
+                    const endOffset = Math.floor(Math.min(endSec, audioBuffer.duration) * sampleRate);
 
-                const leftInt16 = new Int16Array(sampleBlockSize);
-                const rightInt16 = channels > 1 ? new Int16Array(sampleBlockSize) : null;
+                    const fullLeft = audioBuffer.getChannelData(0);
+                    const fullRight = channels > 1 ? audioBuffer.getChannelData(1) : null;
+                    const left = fullLeft.subarray(startOffset, endOffset);
+                    const right = channels > 1 ? fullRight.subarray(startOffset, endOffset) : null;
 
-                for (let i = 0; i < left.length; i += sampleBlockSize) {
-                    const chunkLen = Math.min(sampleBlockSize, left.length - i);
+                    showMessage(noTrim ? "Converting to MP3..." : "Trimming & converting to MP3...", 'info');
+                    btn.innerHTML = '<i class="ph ph-spinner spinning"></i><span>Converting... 0%</span>';
+                    await new Promise(r => setTimeout(r, 30));
 
-                    for (let j = 0; j < chunkLen; j++) {
-                        leftInt16[j] = left[i + j] < 0 ? left[i + j] * 32768 : left[i + j] * 32767;
-                        if (channels > 1) {
-                            rightInt16[j] = right[i + j] < 0 ? right[i + j] * 32768 : right[i + j] * 32767;
+                    const mp3encoder = new lamejs.Mp3Encoder(channels, sampleRate, 192);
+                    const sampleBlockSize = 1152;
+                    const mp3Data = [];
+                    const leftInt16 = new Int16Array(sampleBlockSize);
+                    const rightInt16 = channels > 1 ? new Int16Array(sampleBlockSize) : null;
+
+                    // Yield once at halfway for UI update — no need for the old frequent
+                    // canvas workaround yield since we have full PWA memory
+                    const halfwayMark = Math.floor(left.length / 2 / sampleBlockSize) * sampleBlockSize;
+
+                    for (let i = 0; i < left.length; i += sampleBlockSize) {
+                        const chunkLen = Math.min(sampleBlockSize, left.length - i);
+                        for (let j = 0; j < chunkLen; j++) {
+                            leftInt16[j] = left[i + j] < 0 ? left[i + j] * 32768 : left[i + j] * 32767;
+                            if (channels > 1) {
+                                rightInt16[j] = right[i + j] < 0 ? right[i + j] * 32768 : right[i + j] * 32767;
+                            }
+                        }
+                        const leftChunk = chunkLen === sampleBlockSize ? leftInt16 : leftInt16.subarray(0, chunkLen);
+                        let mp3buf;
+                        if (channels === 1) {
+                            mp3buf = mp3encoder.encodeBuffer(leftChunk);
+                        } else {
+                            const rightChunk = chunkLen === sampleBlockSize ? rightInt16 : rightInt16.subarray(0, chunkLen);
+                            mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                        }
+                        if (mp3buf.length > 0) mp3Data.push(new Int8Array(mp3buf));
+
+                        if (i === halfwayMark) {
+                            btn.innerHTML = '<i class="ph ph-spinner spinning"></i><span>Converting... 50%</span>';
+                            await new Promise(r => setTimeout(r, 0));
                         }
                     }
 
-                    const leftChunk = chunkLen === sampleBlockSize ? leftInt16 : leftInt16.subarray(0, chunkLen);
+                    const flushBuf = mp3encoder.flush();
+                    if (flushBuf.length > 0) mp3Data.push(new Int8Array(flushBuf));
 
-                    let mp3buf;
-                    if (channels === 1) {
-                        mp3buf = mp3encoder.encodeBuffer(leftChunk);
-                    } else {
-                        const rightChunk = chunkLen === sampleBlockSize ? rightInt16 : rightInt16.subarray(0, chunkLen);
-                        mp3buf = mp3encoder.encodeBuffer(leftChunk, rightChunk);
+                    const totalLength = mp3Data.reduce((acc, curr) => acc + curr.length, 0);
+                    const combinedMp3 = new Uint8Array(totalLength);
+                    let offset = 0;
+                    for (const chunk of mp3Data) {
+                        combinedMp3.set(chunk, offset);
+                        offset += chunk.length;
                     }
-
-                    if (mp3buf.length > 0) mp3Data.push(new Int8Array(mp3buf));
-
-                    if (i % (sampleBlockSize * 150) === 0) {
-                        const progress = Math.round((i / left.length) * 100);
-                        btn.innerHTML = `<i class="ph ph-spinner spinning"></i><span>Converting... ${progress}%</span>`;
-                        await new Promise(r => setTimeout(r, 0));
-                    }
+                    mp3Buffer = combinedMp3.buffer;
                 }
 
-                const flushBuf = mp3encoder.flush();
-                if (flushBuf.length > 0) mp3Data.push(new Int8Array(flushBuf));
-
-                const totalLength = mp3Data.reduce((acc, curr) => acc + curr.length, 0);
-                const combinedMp3 = new Uint8Array(totalLength);
-                let offset = 0;
-                for (let chunk of mp3Data) {
-                    combinedMp3.set(chunk, offset);
-                    offset += chunk.length;
-                }
-
-                // 4. Tag the MP3
+                // ── Tag the MP3 ──
                 showMessage("Applying tags...", 'info');
                 btn.innerHTML = '<i class="ph ph-spinner spinning"></i><span>Tagging...</span>';
-                await new Promise(r => setTimeout(r, 50));
+                await new Promise(r => setTimeout(r, 30));
 
-                const writer = new ID3Writer(combinedMp3.buffer);
-
-                // Only write tags that have values
+                const writer = new ID3Writer(mp3Buffer);
                 if (title) writer.setFrame('TIT2', title);
                 if (artist) writer.setFrame('TPE1', [artist]);
                 if (album) writer.setFrame('TALB', album);
 
-                // Cover art: user-selected > original embedded > none
                 if (imageInput) {
                     const imageBuffer = await imageInput.arrayBuffer();
-                    writer.setFrame('APIC', {
-                        type: 3,
-                        data: imageBuffer,
-                        description: 'Cover'
-                    });
+                    writer.setFrame('APIC', { type: 3, data: imageBuffer, description: 'Cover' });
                 } else if (originalCoverData) {
-                    writer.setFrame('APIC', {
-                        type: 3,
-                        data: originalCoverData.data,
-                        description: 'Cover'
-                    });
+                    writer.setFrame('APIC', { type: 3, data: originalCoverData.data, description: 'Cover' });
                 }
 
                 writer.addTag();
                 const taggedBlob = new Blob([writer.arrayBuffer], { type: 'audio/mpeg' });
 
-                // Build filename
+                // ── Build filename ──
                 let fileName = '';
                 if (title && artist) {
                     fileName = `${title} - ${artist}.mp3`;
                 } else if (title) {
                     fileName = `${title}.mp3`;
                 } else {
-                    // Use original filename with .mp3 extension
-                    const origName = audioInput.name.replace(/\.[^.]+$/, '');
-                    fileName = `${origName}.mp3`;
+                    fileName = `${audioInput.name.replace(/\.[^.]+$/, '')}.mp3`;
                 }
 
-                // 5. Show result panel
+                // ── Show result ──
                 const blobUrl = URL.createObjectURL(taggedBlob);
                 showResultPanel(taggedBlob, blobUrl, fileName, title, artist, imageInput);
-
                 showMessage("Done! Your file is ready.", 'success');
 
             } catch (error) {
