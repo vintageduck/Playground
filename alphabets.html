@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f4f8fb" id="metaTheme">
+    <title>Alphabets</title>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Jost:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+        /* ===== RESET ===== */
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        ::-webkit-scrollbar { width: 0; }
+
+        body {
+            min-height: 100vh; min-height: 100dvh;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+            transition: background-color 0.6s ease, color 0.6s ease;
+        }
+
+        /* ===== GREEK THEME — Mediterranean yoghurt pot ===== */
+        body.theme-greek {
+            --bg: #f0f5fa; --bg-card: #ffffff; --bg-input: #e8eff6;
+            --text: #1a2d42; --text-sub: #5e7d99; --text-muted: #9cb3c9;
+            --accent: #0d5eaf; --accent-soft: rgba(13,94,175,0.10);
+            --separator: #cddaea; --card-radius: 16px;
+            --card-shadow: 0 2px 14px rgba(13,94,175,0.07);
+            --font-ui: 'Outfit', -apple-system, sans-serif;
+            --letter-size: 2.4rem;
+            background: var(--bg); color: var(--text); font-family: var(--font-ui);
+        }
+        body.theme-greek.ancient {
+            --bg: #f5f0e4; --bg-card: #faf6ee; --bg-input: #eee7d8;
+            --text: #2a2218; --text-sub: #7a6e5a; --text-muted: #a89c88;
+            --accent: #b8860b; --accent-soft: rgba(184,134,11,0.12);
+            --separator: #ddd4be; --card-shadow: 0 2px 14px rgba(140,105,20,0.08);
+        }
+
+        /* ===== CYRILLIC THEME — Molchat Doma ===== */
+        body.theme-cyrillic {
+            --bg: #0c0c0c; --bg-card: #151515; --bg-input: #1b1b1b;
+            --text: #d8d4ce; --text-sub: #6e6a62; --text-muted: #48453f;
+            --accent: #b33a3a; --accent-soft: rgba(179,58,58,0.16);
+            --separator: #282624; --card-radius: 3px;
+            --card-shadow: none;
+            --font-ui: 'Jost', -apple-system, sans-serif;
+            --letter-size: 2.2rem;
+            background: var(--bg); color: var(--text); font-family: var(--font-ui);
+        }
+        body.theme-cyrillic::after {
+            content: ''; position: fixed; inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+            pointer-events: none; z-index: 10000; opacity: 0.45; mix-blend-mode: overlay;
+        }
+
+        /* ===== IPA THEME — Academic ===== */
+        body.theme-ipa {
+            --bg: #faf6ee; --bg-card: #ffffff; --bg-input: #f0ebe0;
+            --text: #2c2416; --text-sub: #6b5d4a; --text-muted: #a0927c;
+            --accent: #5c4a2f; --accent-soft: rgba(92,74,47,0.10);
+            --separator: #dcd4c2; --card-radius: 2px;
+            --card-shadow: none;
+            --font-ui: 'Cormorant Garamond', Georgia, serif;
+            --letter-size: 2rem;
+            background: var(--bg); color: var(--text); font-family: var(--font-ui);
+        }
+
+        /* ===== HEADER ===== */
+        header {
+            display: flex; align-items: center; padding: 20px;
+            padding-top: max(20px, env(safe-area-inset-top));
+        }
+        .back-btn {
+            background: none; border: none; color: var(--text-sub);
+            font-size: 1.2rem; cursor: pointer; padding: 20px; margin: -20px;
+            text-decoration: none; display: flex; align-items: center;
+            transition: color 0.4s;
+        }
+
+        /* ===== HERO ===== */
+        .hero { text-align: center; padding: 10px 20px 20px; }
+        .hero-title {
+            font-family: var(--font-ui); font-size: clamp(2rem, 8vw, 3.2rem);
+            font-weight: 700; color: var(--accent); line-height: 1.15;
+            letter-spacing: -0.01em;
+            transition: color 0.5s ease;
+        }
+        body.theme-cyrillic .hero-title {
+            text-transform: uppercase; letter-spacing: 0.15em; font-weight: 600;
+        }
+        body.theme-ipa .hero-title {
+            font-style: italic; letter-spacing: 0.02em;
+        }
+        .hero-sub {
+            font-family: var(--font-ui); font-size: 0.78rem; font-weight: 500;
+            text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted);
+            margin-top: 6px; transition: color 0.5s;
+        }
+
+        /* ===== MAIN TOGGLE ===== */
+        .toggle-wrap { padding: 0 20px; margin-bottom: 6px; }
+        .main-toggle {
+            display: flex; padding: 3px; border-radius: var(--card-radius);
+            border: 1px solid var(--separator); background: var(--bg-input);
+            transition: all 0.5s ease;
+        }
+        .main-toggle .tab {
+            flex: 1; background: none; border: none; padding: 11px 6px;
+            font-family: var(--font-ui); font-size: 0.84rem; font-weight: 600;
+            color: var(--text-sub); cursor: pointer;
+            border-radius: calc(var(--card-radius) - 4px);
+            transition: all 0.3s ease; white-space: nowrap;
+        }
+        .main-toggle .tab.active { background: var(--accent-soft); color: var(--accent); }
+
+        /* ===== SUB TOGGLE ===== */
+        .sub-wrap { padding: 0 20px; margin-bottom: 10px; min-height: 32px; }
+        .sub-toggle {
+            display: flex; gap: 6px; justify-content: center; padding: 6px 0;
+            transition: opacity 0.3s;
+        }
+        .sub-toggle.hidden { display: none; }
+        .sub-tab {
+            background: none; border: 1px solid var(--separator); padding: 5px 12px;
+            font-family: var(--font-ui); font-size: 0.68rem; font-weight: 500;
+            color: var(--text-muted); cursor: pointer; border-radius: 20px;
+            transition: all 0.25s; text-transform: uppercase; letter-spacing: 0.08em;
+        }
+        .sub-tab.active { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+        /* ===== DECORATIVE LINES ===== */
+        .deco-greek, .deco-cyrillic, .deco-ipa { display: none; margin: 0 20px 14px; transition: opacity 0.5s; }
+        body.theme-greek .deco-greek, body.theme-greek.ancient .deco-greek { display: block; }
+        body.theme-cyrillic .deco-cyrillic { display: block; }
+        body.theme-ipa .deco-ipa { display: block; }
+
+        .deco-greek {
+            height: 8px; opacity: 0.18;
+            background: repeating-linear-gradient(90deg,
+                var(--accent) 0 6px, transparent 6px 10px,
+                var(--accent) 10px 12px, transparent 12px 18px);
+        }
+        .deco-cyrillic { height: 3px; background: var(--accent); opacity: 0.5; }
+        .deco-ipa { height: 1px; background: var(--separator); }
+
+        /* ===== TRANSLITERATION ===== */
+        .translit-wrap { padding: 0 20px; margin-bottom: 16px; }
+        .translit-wrap.hidden { display: none; }
+        .translit-card {
+            background: var(--bg-card); border: 1px solid var(--separator);
+            border-radius: var(--card-radius); padding: 14px;
+            display: flex; gap: 10px; align-items: stretch;
+            box-shadow: var(--card-shadow); transition: all 0.5s ease;
+        }
+        .translit-half { flex: 1; display: flex; flex-direction: column; }
+        .translit-half label {
+            font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.12em; color: var(--text-muted); margin-bottom: 5px;
+        }
+        .translit-half textarea {
+            flex: 1; min-height: 56px; background: var(--bg-input);
+            border: 1px solid var(--separator); border-radius: 8px;
+            padding: 10px 11px; color: var(--text); font-family: var(--font-ui);
+            font-size: 1.05rem; resize: none; outline: none;
+            transition: border-color 0.2s, background-color 0.5s, color 0.5s;
+            -webkit-appearance: none;
+        }
+        .translit-half textarea:focus { border-color: var(--accent); }
+        .translit-arrow {
+            display: flex; align-items: center; color: var(--text-muted);
+            font-size: 1.1rem; user-select: none; padding: 0 2px;
+        }
+
+        /* ===== IPA PILL ===== */
+        .pill-wrap { padding: 0 20px; margin-bottom: 12px; display: flex; justify-content: flex-end; }
+        .pill-wrap.hidden { display: none; }
+        .ipa-pill {
+            background: var(--accent-soft); border: 1px solid var(--separator);
+            padding: 4px 13px; font-family: var(--font-ui); font-size: 0.70rem;
+            font-weight: 600; color: var(--text-sub); cursor: pointer;
+            border-radius: 20px; transition: all 0.25s; letter-spacing: 0.03em;
+        }
+        .ipa-pill.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+        /* ===== SEARCH ===== */
+        .search-wrap { padding: 0 20px; margin-bottom: 14px; }
+        .search-input {
+            width: 100%; background: var(--bg-input); border: 1px solid var(--separator);
+            border-radius: var(--card-radius); padding: 11px 14px;
+            color: var(--text); font-family: var(--font-ui); font-size: 0.88rem;
+            outline: none; transition: border-color 0.2s, background-color 0.5s;
+            -webkit-appearance: none;
+        }
+        .search-input:focus { border-color: var(--accent); }
+        .search-input::placeholder { color: var(--text-muted); }
+
+        /* ===== LETTER GRID ===== */
+        .grid-wrap { padding: 0 20px 40px; }
+        .letter-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+            gap: 10px;
+        }
+        .letter-card {
+            background: var(--bg-card); border: 1px solid var(--separator);
+            border-radius: var(--card-radius); padding: 14px 10px;
+            text-align: center; cursor: pointer; position: relative;
+            box-shadow: var(--card-shadow);
+            transition: all 0.5s ease, transform 0.15s ease;
+        }
+        .letter-card:active { transform: scale(0.96); }
+        .letter-card.hidden { display: none; }
+
+        /* Theme-specific card tweaks */
+        body.theme-cyrillic .letter-card {
+            border-left: 3px solid var(--accent); border-radius: 2px;
+            padding: 12px 10px;
+        }
+        body.theme-ipa .letter-card {
+            border: none; border-bottom: 1px solid var(--separator);
+            border-radius: 0; padding: 12px 8px;
+        }
+
+        .letter-char {
+            font-size: var(--letter-size); font-weight: 700; color: var(--accent);
+            line-height: 1.15; margin-bottom: 4px; transition: color 0.5s;
+        }
+        .letter-lower {
+            font-size: 0.78rem; color: var(--text-sub); margin-bottom: 6px;
+            font-weight: 400;
+        }
+        .letter-name {
+            font-size: 0.70rem; font-weight: 600; color: var(--text);
+            text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 3px;
+        }
+        .letter-latin {
+            font-size: 0.80rem; color: var(--text-sub); margin-bottom: 2px;
+        }
+        .letter-sound {
+            font-size: 0.68rem; color: var(--text-muted); font-style: italic;
+            line-height: 1.3;
+        }
+        .letter-ipa-tag {
+            font-size: 0.72rem; color: var(--accent); margin-top: 5px;
+            opacity: 0; max-height: 0; overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        body.show-ipa .letter-ipa-tag { opacity: 1; max-height: 28px; }
+
+        /* ===== IPA CHART (IPA mode only) ===== */
+        .ipa-chart-wrap { padding: 0 20px 40px; display: none; }
+        body.theme-ipa .ipa-chart-wrap { display: block; }
+        body.theme-ipa .grid-wrap { display: none; }
+
+        .ipa-cat-title {
+            font-family: var(--font-ui); font-size: 1.15rem; font-weight: 600;
+            color: var(--text); margin: 20px 0 10px; padding-bottom: 5px;
+            border-bottom: 2px solid var(--accent);
+        }
+        .ipa-cat-title:first-child { margin-top: 0; }
+        .ipa-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
+            gap: 8px; margin-bottom: 8px;
+        }
+        .ipa-cell {
+            background: var(--bg-card); border: 1px solid var(--separator);
+            border-radius: var(--card-radius); padding: 10px 8px;
+            text-align: center; cursor: pointer;
+            transition: all 0.3s ease, transform 0.15s ease;
+        }
+        .ipa-cell:active { transform: scale(0.96); }
+        .ipa-cell.hidden { display: none; }
+        .ipa-sym {
+            font-size: 1.6rem; font-weight: 700; color: var(--accent);
+            line-height: 1.2; margin-bottom: 3px;
+        }
+        .ipa-desc { font-size: 0.64rem; color: var(--text-sub); font-style: italic; }
+        .ipa-ex { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; }
+
+        /* ===== TOAST ===== */
+        .toast {
+            position: fixed; bottom: 40px; left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--text); color: var(--bg);
+            padding: 10px 22px; border-radius: 8px;
+            font-weight: 500; font-size: 0.88rem; z-index: 100001;
+            transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+            pointer-events: none; white-space: nowrap;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 400px) {
+            .letter-grid { grid-template-columns: repeat(2, 1fr); }
+            .ipa-grid { grid-template-columns: repeat(2, 1fr); }
+            .main-toggle .tab { font-size: 0.78rem; padding: 10px 4px; }
+        }
+    </style>
+</head>
+
+<body class="theme-greek">
+
+    <header>
+        <a href="index.html" class="back-btn">&larr;</a>
+    </header>
+
+    <!-- HERO -->
+    <div class="hero">
+        <div class="hero-title" id="heroTitle">Αλφάβητο</div>
+        <div class="hero-sub" id="heroSub">Modern Greek — 24 letters</div>
+    </div>
+
+    <!-- MAIN TOGGLE -->
+    <div class="toggle-wrap">
+        <div class="main-toggle" id="mainToggle">
+            <button class="tab active" data-mode="greek" onclick="setMode('greek')">Ελληνικά</button>
+            <button class="tab" data-mode="cyrillic" onclick="setMode('cyrillic')">Кириллица</button>
+            <button class="tab" data-mode="ipa" onclick="setMode('ipa')">IPA</button>
+        </div>
+    </div>
+
+    <!-- SUB TOGGLE -->
+    <div class="sub-wrap">
+        <div class="sub-toggle" id="subGreek">
+            <button class="sub-tab active" data-sub="modern" onclick="setSub('modern')">Modern</button>
+            <button class="sub-tab" data-sub="ancient" onclick="setSub('ancient')">Ancient</button>
+        </div>
+        <div class="sub-toggle hidden" id="subCyrillic">
+            <button class="sub-tab active" data-sub="russian" onclick="setSub('russian')">Russian</button>
+            <button class="sub-tab" data-sub="ukrainian" onclick="setSub('ukrainian')">Ukrainian</button>
+            <button class="sub-tab" data-sub="serbian" onclick="setSub('serbian')">Serbian</button>
+        </div>
+    </div>
+
+    <!-- DECORATIVE -->
+    <div class="deco-greek"></div>
+    <div class="deco-cyrillic"></div>
+    <div class="deco-ipa"></div>
+
+    <!-- TRANSLITERATION -->
+    <div class="translit-wrap" id="translitWrap">
+        <div class="translit-card">
+            <div class="translit-half">
+                <label>Latin</label>
+                <textarea id="latinBox" placeholder="Type here…"></textarea>
+            </div>
+            <div class="translit-arrow">⇄</div>
+            <div class="translit-half">
+                <label id="scriptLabel">Greek</label>
+                <textarea id="scriptBox" placeholder="…or here"></textarea>
+            </div>
+        </div>
+    </div>
+
+    <!-- IPA PILL -->
+    <div class="pill-wrap" id="pillWrap">
+        <button class="ipa-pill" id="ipaPill" onclick="toggleShowIPA()">Show IPA</button>
+    </div>
+
+    <!-- SEARCH -->
+    <div class="search-wrap">
+        <input type="text" class="search-input" id="searchBox" placeholder="Filter letters…"
+            autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+
+    <!-- LETTER GRID -->
+    <div class="grid-wrap" id="gridWrap">
+        <div class="letter-grid" id="letterGrid"></div>
+    </div>
+
+    <!-- IPA CHART -->
+    <div class="ipa-chart-wrap" id="ipaChartWrap"></div>
+
+    <!-- TOAST -->
+    <div class="toast" id="toast"></div>
+
+<script>
+// ================================================================
+//  DATA
+// ================================================================
+const ALPHA = {
+    greek: {
+        modern: {
+            hero: 'Αλφάβητο', sub: 'Modern Greek — 24 letters', label: 'Greek',
+            letters: [
+                { u:'Α', l:'α', name:'Alpha',   lat:'a',     snd:'"ah" as in father',  ipa:'/a/' },
+                { u:'Β', l:'β', name:'Beta',    lat:'v',     snd:'"v" as in vine',     ipa:'/v/' },
+                { u:'Γ', l:'γ', name:'Gamma',   lat:'g',     snd:'"y" before e/i, guttural "g" elsewhere', ipa:'/ɣ/ · /ʝ/' },
+                { u:'Δ', l:'δ', name:'Delta',   lat:'d',     snd:'"th" as in this',    ipa:'/ð/' },
+                { u:'Ε', l:'ε', name:'Epsilon', lat:'e',     snd:'"e" as in met',      ipa:'/e/' },
+                { u:'Ζ', l:'ζ', name:'Zeta',    lat:'z',     snd:'"z" as in zoo',      ipa:'/z/' },
+                { u:'Η', l:'η', name:'Eta',     lat:'i',     snd:'"ee" as in see',     ipa:'/i/' },
+                { u:'Θ', l:'θ', name:'Theta',   lat:'th',    snd:'"th" as in think',   ipa:'/θ/' },
+                { u:'Ι', l:'ι', name:'Iota',    lat:'i',     snd:'"ee" as in see',     ipa:'/i/' },
+                { u:'Κ', l:'κ', name:'Kappa',   lat:'k',     snd:'"k" as in kit',      ipa:'/k/' },
+                { u:'Λ', l:'λ', name:'Lambda',  lat:'l',     snd:'"l" as in let',      ipa:'/l/' },
+                { u:'Μ', l:'μ', name:'Mu',      lat:'m',     snd:'"m" as in met',      ipa:'/m/' },
+                { u:'Ν', l:'ν', name:'Nu',      lat:'n',     snd:'"n" as in net',      ipa:'/n/' },
+                { u:'Ξ', l:'ξ', name:'Xi',      lat:'x',     snd:'"ks" as in box',     ipa:'/ks/' },
+                { u:'Ο', l:'ο', name:'Omicron', lat:'o',     snd:'"o" as in got',      ipa:'/o/' },
+                { u:'Π', l:'π', name:'Pi',      lat:'p',     snd:'"p" as in pet',      ipa:'/p/' },
+                { u:'Ρ', l:'ρ', name:'Rho',     lat:'r',     snd:'rolled "r"',         ipa:'/r/' },
+                { u:'Σ', l:'σ/ς', name:'Sigma', lat:'s',     snd:'"s" as in sit',      ipa:'/s/' },
+                { u:'Τ', l:'τ', name:'Tau',     lat:'t',     snd:'"t" as in top',      ipa:'/t/' },
+                { u:'Υ', l:'υ', name:'Upsilon', lat:'y',     snd:'"ee" as in see',     ipa:'/i/' },
+                { u:'Φ', l:'φ', name:'Phi',     lat:'f',     snd:'"f" as in fit',      ipa:'/f/' },
+                { u:'Χ', l:'χ', name:'Chi',     lat:'ch',    snd:'"h" or "ch" as in loch', ipa:'/x/ · /ç/' },
+                { u:'Ψ', l:'ψ', name:'Psi',     lat:'ps',    snd:'"ps" as in lips',    ipa:'/ps/' },
+                { u:'Ω', l:'ω', name:'Omega',   lat:'o',     snd:'"o" as in got',      ipa:'/o/' },
+            ]
+        },
+        ancient: {
+            hero: 'Αλφάβητον', sub: 'Ancient Greek — 24 letters', label: 'Greek',
+            letters: [
+                { u:'Α', l:'α', name:'Alpha',   lat:'a',     snd:'short/long "ah"',       ipa:'/a/ · /aː/' },
+                { u:'Β', l:'β', name:'Beta',    lat:'b',     snd:'"b" as in bet',         ipa:'/b/' },
+                { u:'Γ', l:'γ', name:'Gamma',   lat:'g',     snd:'"g" as in get',         ipa:'/ɡ/' },
+                { u:'Δ', l:'δ', name:'Delta',   lat:'d',     snd:'"d" as in dog',         ipa:'/d/' },
+                { u:'Ε', l:'ε', name:'Epsilon', lat:'e',     snd:'short "e" as in met',   ipa:'/e/' },
+                { u:'Ζ', l:'ζ', name:'Zeta',    lat:'zd',    snd:'"zd" as in wisdom',     ipa:'/zd/' },
+                { u:'Η', l:'η', name:'Eta',     lat:'ē',     snd:'long "e" as in they',   ipa:'/ɛː/' },
+                { u:'Θ', l:'θ', name:'Theta',   lat:'th',    snd:'aspirated "t"',         ipa:'/tʰ/' },
+                { u:'Ι', l:'ι', name:'Iota',    lat:'i',     snd:'"i" short or long',     ipa:'/i/ · /iː/' },
+                { u:'Κ', l:'κ', name:'Kappa',   lat:'k',     snd:'"k" as in kit',         ipa:'/k/' },
+                { u:'Λ', l:'λ', name:'Lambda',  lat:'l',     snd:'"l" as in let',         ipa:'/l/' },
+                { u:'Μ', l:'μ', name:'Mu',      lat:'m',     snd:'"m" as in met',         ipa:'/m/' },
+                { u:'Ν', l:'ν', name:'Nu',      lat:'n',     snd:'"n" as in net',         ipa:'/n/' },
+                { u:'Ξ', l:'ξ', name:'Xi',      lat:'ks',    snd:'"ks" as in box',        ipa:'/ks/' },
+                { u:'Ο', l:'ο', name:'Omicron', lat:'o',     snd:'short "o" as in pot',   ipa:'/o/' },
+                { u:'Π', l:'π', name:'Pi',      lat:'p',     snd:'"p" as in pet',         ipa:'/p/' },
+                { u:'Ρ', l:'ρ', name:'Rho',     lat:'r',     snd:'rolled "r"',            ipa:'/r/' },
+                { u:'Σ', l:'σ/ς', name:'Sigma', lat:'s',     snd:'"s" as in sit',         ipa:'/s/' },
+                { u:'Τ', l:'τ', name:'Tau',     lat:'t',     snd:'"t" as in top',         ipa:'/t/' },
+                { u:'Υ', l:'υ', name:'Upsilon', lat:'u',     snd:'French "u" in tu',      ipa:'/y/ · /yː/' },
+                { u:'Φ', l:'φ', name:'Phi',     lat:'ph',    snd:'aspirated "p"',         ipa:'/pʰ/' },
+                { u:'Χ', l:'χ', name:'Chi',     lat:'kh',    snd:'aspirated "k"',         ipa:'/kʰ/' },
+                { u:'Ψ', l:'ψ', name:'Psi',     lat:'ps',    snd:'"ps" as in lips',       ipa:'/ps/' },
+                { u:'Ω', l:'ω', name:'Omega',   lat:'ō',     snd:'long "o" as in bone',   ipa:'/ɔː/' },
+            ]
+        }
+    },
+    cyrillic: {
+        russian: {
+            hero: 'Алфавит', sub: 'Russian — 33 letters', label: 'Cyrillic',
+            letters: [
+                { u:'А', l:'а', name:'А',              lat:'a',    snd:'"ah" as in father',        ipa:'/a/' },
+                { u:'Б', l:'б', name:'Бэ',             lat:'b',    snd:'"b" as in bet',            ipa:'/b/' },
+                { u:'В', l:'в', name:'Вэ',             lat:'v',    snd:'"v" as in vine',           ipa:'/v/' },
+                { u:'Г', l:'г', name:'Гэ',             lat:'g',    snd:'"g" as in get',            ipa:'/ɡ/' },
+                { u:'Д', l:'д', name:'Дэ',             lat:'d',    snd:'"d" as in dog',            ipa:'/d/' },
+                { u:'Е', l:'е', name:'Е',              lat:'ye',   snd:'"ye" as in yet',           ipa:'/je/' },
+                { u:'Ё', l:'ё', name:'Ё',              lat:'yo',   snd:'"yo" as in yolk',          ipa:'/jo/' },
+                { u:'Ж', l:'ж', name:'Жэ',             lat:'zh',   snd:'"s" as in measure',        ipa:'/ʐ/' },
+                { u:'З', l:'з', name:'Зэ',             lat:'z',    snd:'"z" as in zoo',            ipa:'/z/' },
+                { u:'И', l:'и', name:'И',              lat:'i',    snd:'"ee" as in see',           ipa:'/i/' },
+                { u:'Й', l:'й', name:'Краткое И',      lat:'y',    snd:'"y" as in boy',            ipa:'/j/' },
+                { u:'К', l:'к', name:'Ка',             lat:'k',    snd:'"k" as in kit',            ipa:'/k/' },
+                { u:'Л', l:'л', name:'Эл',             lat:'l',    snd:'"l" as in let',            ipa:'/l/' },
+                { u:'М', l:'м', name:'Эм',             lat:'m',    snd:'"m" as in met',            ipa:'/m/' },
+                { u:'Н', l:'н', name:'Эн',             lat:'n',    snd:'"n" as in net',            ipa:'/n/' },
+                { u:'О', l:'о', name:'О',              lat:'o',    snd:'"o" as in or',             ipa:'/o/' },
+                { u:'П', l:'п', name:'Пэ',             lat:'p',    snd:'"p" as in pet',            ipa:'/p/' },
+                { u:'Р', l:'р', name:'Эр',             lat:'r',    snd:'rolled "r"',               ipa:'/r/' },
+                { u:'С', l:'с', name:'Эс',             lat:'s',    snd:'"s" as in sit',            ipa:'/s/' },
+                { u:'Т', l:'т', name:'Тэ',             lat:'t',    snd:'"t" as in top',            ipa:'/t/' },
+                { u:'У', l:'у', name:'У',              lat:'u',    snd:'"oo" as in pool',          ipa:'/u/' },
+                { u:'Ф', l:'ф', name:'Эф',             lat:'f',    snd:'"f" as in fit',            ipa:'/f/' },
+                { u:'Х', l:'х', name:'Ха',             lat:'kh',   snd:'"ch" as in loch',          ipa:'/x/' },
+                { u:'Ц', l:'ц', name:'Цэ',             lat:'ts',   snd:'"ts" as in cats',          ipa:'/ts/' },
+                { u:'Ч', l:'ч', name:'Чэ',             lat:'ch',   snd:'"ch" as in check',         ipa:'/tɕ/' },
+                { u:'Ш', l:'ш', name:'Ша',             lat:'sh',   snd:'"sh" as in she',           ipa:'/ʂ/' },
+                { u:'Щ', l:'щ', name:'Ща',             lat:'shch', snd:'"shch" as in fresh cheese', ipa:'/ɕː/' },
+                { u:'Ъ', l:'ъ', name:'Твёрдый знак',   lat:'ʺ',    snd:'hard sign — no sound',     ipa:'—' },
+                { u:'Ы', l:'ы', name:'Ы',              lat:'y',    snd:'"i" as in bit (back)',     ipa:'/ɨ/' },
+                { u:'Ь', l:'ь', name:'Мягкий знак',    lat:'ʹ',    snd:'soft sign — palatalises',  ipa:'—' },
+                { u:'Э', l:'э', name:'Э',              lat:'e',    snd:'"e" as in met',            ipa:'/e/' },
+                { u:'Ю', l:'ю', name:'Ю',              lat:'yu',   snd:'"you" as in youth',        ipa:'/ju/' },
+                { u:'Я', l:'я', name:'Я',              lat:'ya',   snd:'"ya" as in yard',          ipa:'/ja/' },
+            ]
+        },
+        ukrainian: {
+            hero: 'Абетка', sub: 'Ukrainian — 33 letters', label: 'Cyrillic',
+            letters: [
+                { u:'А', l:'а', name:'А',      lat:'a',    snd:'"ah" as in father',    ipa:'/ɑ/' },
+                { u:'Б', l:'б', name:'Бе',     lat:'b',    snd:'"b" as in bet',        ipa:'/b/' },
+                { u:'В', l:'в', name:'Ве',     lat:'v',    snd:'"v" as in vine',       ipa:'/w~v/' },
+                { u:'Г', l:'г', name:'Ге',     lat:'h',    snd:'"h" as in hat',        ipa:'/ɦ/' },
+                { u:'Ґ', l:'ґ', name:'Ґе',     lat:'g',    snd:'"g" as in get',        ipa:'/ɡ/' },
+                { u:'Д', l:'д', name:'Де',     lat:'d',    snd:'"d" as in dog',        ipa:'/d/' },
+                { u:'Е', l:'е', name:'Е',      lat:'e',    snd:'"e" as in met',        ipa:'/ɛ/' },
+                { u:'Є', l:'є', name:'Є',      lat:'ye',   snd:'"ye" as in yet',       ipa:'/jɛ/' },
+                { u:'Ж', l:'ж', name:'Же',     lat:'zh',   snd:'"s" as in measure',    ipa:'/ʒ/' },
+                { u:'З', l:'з', name:'Зе',     lat:'z',    snd:'"z" as in zoo',        ipa:'/z/' },
+                { u:'И', l:'и', name:'И',      lat:'y',    snd:'"i" as in bit',        ipa:'/ɪ/' },
+                { u:'І', l:'і', name:'І',       lat:'i',    snd:'"ee" as in see',       ipa:'/i/' },
+                { u:'Ї', l:'ї', name:'Ї',       lat:'yi',   snd:'"yee" as in yield',    ipa:'/ji/' },
+                { u:'Й', l:'й', name:'Йот',    lat:'y',    snd:'"y" as in yes',        ipa:'/j/' },
+                { u:'К', l:'к', name:'Ка',     lat:'k',    snd:'"k" as in kit',        ipa:'/k/' },
+                { u:'Л', l:'л', name:'Ел',     lat:'l',    snd:'"l" as in let',        ipa:'/l/' },
+                { u:'М', l:'м', name:'Ем',     lat:'m',    snd:'"m" as in met',        ipa:'/m/' },
+                { u:'Н', l:'н', name:'Ен',     lat:'n',    snd:'"n" as in net',        ipa:'/n/' },
+                { u:'О', l:'о', name:'О',      lat:'o',    snd:'"o" as in or',         ipa:'/ɔ/' },
+                { u:'П', l:'п', name:'Пе',     lat:'p',    snd:'"p" as in pet',        ipa:'/p/' },
+                { u:'Р', l:'р', name:'Ер',     lat:'r',    snd:'rolled "r"',           ipa:'/r/' },
+                { u:'С', l:'с', name:'Ес',     lat:'s',    snd:'"s" as in sit',        ipa:'/s/' },
+                { u:'Т', l:'т', name:'Те',     lat:'t',    snd:'"t" as in top',        ipa:'/t/' },
+                { u:'У', l:'у', name:'У',      lat:'u',    snd:'"oo" as in pool',      ipa:'/u/' },
+                { u:'Ф', l:'ф', name:'Еф',    lat:'f',    snd:'"f" as in fit',        ipa:'/f/' },
+                { u:'Х', l:'х', name:'Ха',     lat:'kh',   snd:'"ch" as in loch',      ipa:'/x/' },
+                { u:'Ц', l:'ц', name:'Це',     lat:'ts',   snd:'"ts" as in cats',      ipa:'/ts/' },
+                { u:'Ч', l:'ч', name:'Че',     lat:'ch',   snd:'"ch" as in check',     ipa:'/tʃ/' },
+                { u:'Ш', l:'ш', name:'Ша',     lat:'sh',   snd:'"sh" as in she',       ipa:'/ʃ/' },
+                { u:'Щ', l:'щ', name:'Ща',     lat:'shch', snd:'"shch" as in fresh cheese', ipa:'/ʃtʃ/' },
+                { u:'Ь', l:'ь', name:'Мʼякий знак', lat:'ʹ', snd:'soft sign — palatalises', ipa:'—' },
+                { u:'Ю', l:'ю', name:'Ю',      lat:'yu',   snd:'"you" as in youth',    ipa:'/ju/' },
+                { u:'Я', l:'я', name:'Я',      lat:'ya',   snd:'"ya" as in yard',      ipa:'/jɑ/' },
+            ]
+        },
+        serbian: {
+            hero: 'Азбука', sub: 'Serbian — 30 letters', label: 'Cyrillic',
+            letters: [
+                { u:'А', l:'а', name:'А',   lat:'a',   snd:'"ah" as in father',   ipa:'/a/' },
+                { u:'Б', l:'б', name:'Бе',  lat:'b',   snd:'"b" as in bet',       ipa:'/b/' },
+                { u:'В', l:'в', name:'Ве',  lat:'v',   snd:'"v" as in vine',      ipa:'/ʋ/' },
+                { u:'Г', l:'г', name:'Ге',  lat:'g',   snd:'"g" as in get',       ipa:'/ɡ/' },
+                { u:'Д', l:'д', name:'Де',  lat:'d',   snd:'"d" as in dog',       ipa:'/d/' },
+                { u:'Ђ', l:'ђ', name:'Ђе',  lat:'đ',   snd:'"j" as in juice',     ipa:'/dʑ/' },
+                { u:'Е', l:'е', name:'Е',   lat:'e',   snd:'"e" as in met',       ipa:'/e/' },
+                { u:'Ж', l:'ж', name:'Же',  lat:'ž',   snd:'"s" as in measure',   ipa:'/ʒ/' },
+                { u:'З', l:'з', name:'Зе',  lat:'z',   snd:'"z" as in zoo',       ipa:'/z/' },
+                { u:'И', l:'и', name:'И',   lat:'i',   snd:'"ee" as in see',      ipa:'/i/' },
+                { u:'Ј', l:'ј', name:'Је',  lat:'j',   snd:'"y" as in yes',       ipa:'/j/' },
+                { u:'К', l:'к', name:'Ка',  lat:'k',   snd:'"k" as in kit',       ipa:'/k/' },
+                { u:'Л', l:'л', name:'Ел',  lat:'l',   snd:'"l" as in let',       ipa:'/l/' },
+                { u:'Љ', l:'љ', name:'Ље',  lat:'lj',  snd:'"li" as in million',  ipa:'/ʎ/' },
+                { u:'М', l:'м', name:'Ем',  lat:'m',   snd:'"m" as in met',       ipa:'/m/' },
+                { u:'Н', l:'н', name:'Ен',  lat:'n',   snd:'"n" as in net',       ipa:'/n/' },
+                { u:'Њ', l:'њ', name:'Ње',  lat:'nj',  snd:'"ny" as in canyon',   ipa:'/ɲ/' },
+                { u:'О', l:'о', name:'О',   lat:'o',   snd:'"o" as in or',        ipa:'/o/' },
+                { u:'П', l:'п', name:'Пе',  lat:'p',   snd:'"p" as in pet',       ipa:'/p/' },
+                { u:'Р', l:'р', name:'Ер',  lat:'r',   snd:'rolled "r"',          ipa:'/r/' },
+                { u:'С', l:'с', name:'Ес',  lat:'s',   snd:'"s" as in sit',       ipa:'/s/' },
+                { u:'Т', l:'т', name:'Те',  lat:'t',   snd:'"t" as in top',       ipa:'/t/' },
+                { u:'Ћ', l:'ћ', name:'Ће',  lat:'ć',   snd:'"ch" as in cheap (soft)', ipa:'/tɕ/' },
+                { u:'У', l:'у', name:'У',   lat:'u',   snd:'"oo" as in pool',     ipa:'/u/' },
+                { u:'Ф', l:'ф', name:'Еф', lat:'f',   snd:'"f" as in fit',       ipa:'/f/' },
+                { u:'Х', l:'х', name:'Ха',  lat:'h',   snd:'"h" as in hat',       ipa:'/x/' },
+                { u:'Ц', l:'ц', name:'Це',  lat:'c',   snd:'"ts" as in cats',     ipa:'/ts/' },
+                { u:'Ч', l:'ч', name:'Че',  lat:'č',   snd:'"ch" as in check',    ipa:'/tʃ/' },
+                { u:'Џ', l:'џ', name:'Џе',  lat:'dž',  snd:'"j" as in judge',     ipa:'/dʒ/' },
+                { u:'Ш', l:'ш', name:'Ша',  lat:'š',   snd:'"sh" as in she',      ipa:'/ʃ/' },
+            ]
+        }
+    }
+};
+
+// --- IPA CHART DATA ---
+const IPA_DATA = [
+    { title: 'Plosives', items: [
+        { sym:'p', desc:'voiceless bilabial',       ex:'"p" in pin' },
+        { sym:'b', desc:'voiced bilabial',          ex:'"b" in bin' },
+        { sym:'t', desc:'voiceless alveolar',       ex:'"t" in tin' },
+        { sym:'d', desc:'voiced alveolar',          ex:'"d" in din' },
+        { sym:'k', desc:'voiceless velar',          ex:'"k" in kit' },
+        { sym:'ɡ', desc:'voiced velar',             ex:'"g" in get' },
+        { sym:'ʔ', desc:'glottal stop',             ex:'"uh-oh"' },
+    ]},
+    { title: 'Nasals', items: [
+        { sym:'m', desc:'bilabial',     ex:'"m" in met' },
+        { sym:'n', desc:'alveolar',     ex:'"n" in net' },
+        { sym:'ŋ', desc:'velar',        ex:'"ng" in sing' },
+        { sym:'ɲ', desc:'palatal',      ex:'"ny" in canyon' },
+    ]},
+    { title: 'Fricatives', items: [
+        { sym:'f', desc:'voiceless labiodental',    ex:'"f" in fit' },
+        { sym:'v', desc:'voiced labiodental',       ex:'"v" in vine' },
+        { sym:'θ', desc:'voiceless dental',         ex:'"th" in think' },
+        { sym:'ð', desc:'voiced dental',            ex:'"th" in this' },
+        { sym:'s', desc:'voiceless alveolar',       ex:'"s" in sit' },
+        { sym:'z', desc:'voiced alveolar',          ex:'"z" in zoo' },
+        { sym:'ʃ', desc:'voiceless postalveolar',   ex:'"sh" in she' },
+        { sym:'ʒ', desc:'voiced postalveolar',      ex:'"s" in measure' },
+        { sym:'x', desc:'voiceless velar',          ex:'"ch" in loch' },
+        { sym:'ɣ', desc:'voiced velar',             ex:'Greek γ' },
+        { sym:'h', desc:'voiceless glottal',        ex:'"h" in hat' },
+        { sym:'ɦ', desc:'voiced glottal',           ex:'Ukrainian г' },
+    ]},
+    { title: 'Affricates', items: [
+        { sym:'tʃ', desc:'voiceless postalveolar',  ex:'"ch" in check' },
+        { sym:'dʒ', desc:'voiced postalveolar',     ex:'"j" in judge' },
+        { sym:'ts', desc:'voiceless alveolar',      ex:'"ts" in cats' },
+        { sym:'tɕ', desc:'voiceless alveolo-palatal', ex:'Russian ч' },
+        { sym:'dʑ', desc:'voiced alveolo-palatal',  ex:'Serbian ђ' },
+    ]},
+    { title: 'Approximants', items: [
+        { sym:'ɹ', desc:'alveolar',         ex:'"r" in red (English)' },
+        { sym:'r', desc:'alveolar trill',    ex:'rolled "r" (Spanish)' },
+        { sym:'j', desc:'palatal',           ex:'"y" in yes' },
+        { sym:'w', desc:'labio-velar',       ex:'"w" in wet' },
+        { sym:'l', desc:'alveolar lateral',  ex:'"l" in let' },
+        { sym:'ʎ', desc:'palatal lateral',   ex:'"li" in million' },
+    ]},
+    { title: 'Close Vowels', items: [
+        { sym:'i', desc:'close front unrounded',    ex:'"ee" in see' },
+        { sym:'y', desc:'close front rounded',      ex:'French "u" in tu' },
+        { sym:'ɨ', desc:'close central unrounded',  ex:'Russian ы' },
+        { sym:'u', desc:'close back rounded',       ex:'"oo" in pool' },
+    ]},
+    { title: 'Close-mid Vowels', items: [
+        { sym:'e', desc:'close-mid front',          ex:'"ey" in they' },
+        { sym:'ø', desc:'close-mid front rounded',  ex:'French "eu" in peu' },
+        { sym:'o', desc:'close-mid back rounded',   ex:'"o" in go' },
+    ]},
+    { title: 'Mid Vowels', items: [
+        { sym:'ə', desc:'mid central (schwa)',      ex:'"a" in about' },
+    ]},
+    { title: 'Open-mid Vowels', items: [
+        { sym:'ɛ', desc:'open-mid front',           ex:'"e" in met' },
+        { sym:'œ', desc:'open-mid front rounded',   ex:'French "eu" in peur' },
+        { sym:'ɔ', desc:'open-mid back rounded',    ex:'"aw" in law' },
+    ]},
+    { title: 'Open Vowels', items: [
+        { sym:'a', desc:'open front',               ex:'"a" in father' },
+        { sym:'ɑ', desc:'open back unrounded',      ex:'"a" in spa' },
+        { sym:'ɒ', desc:'open back rounded',        ex:'"o" in lot (British)' },
+    ]},
+];
+
+// --- TRANSLITERATION MAPS (Latin → Script, longest-first) ---
+const TRANSLIT = {
+    greek: {
+        modern: [
+            ['th','θ'],['ph','φ'],['ch','χ'],['ps','ψ'],['ks','ξ'],
+            ['a','α'],['b','β'],['v','β'],['g','γ'],['d','δ'],
+            ['e','ε'],['z','ζ'],['i','ι'],['k','κ'],['l','λ'],
+            ['m','μ'],['n','ν'],['x','ξ'],['o','ο'],['p','π'],
+            ['r','ρ'],['s','σ'],['t','τ'],['u','υ'],['y','υ'],
+            ['f','φ'],['w','ω'],['h','η'],
+        ],
+        ancient: [
+            ['th','θ'],['ph','φ'],['kh','χ'],['ps','ψ'],['ks','ξ'],
+            ['a','α'],['b','β'],['g','γ'],['d','δ'],
+            ['e','ε'],['z','ζ'],['i','ι'],['k','κ'],['l','λ'],
+            ['m','μ'],['n','ν'],['x','ξ'],['o','ο'],['p','π'],
+            ['r','ρ'],['s','σ'],['t','τ'],['u','υ'],['y','υ'],
+            ['f','φ'],['h','η'],['w','ω'],
+        ],
+    },
+    cyrillic: {
+        russian: [
+            ['shch','щ'],['sh','ш'],['zh','ж'],['ch','ч'],['kh','х'],
+            ['ts','ц'],['ya','я'],['yu','ю'],['yo','ё'],['ye','е'],
+            ['a','а'],['b','б'],['v','в'],['g','г'],['d','д'],
+            ['e','э'],['z','з'],['i','и'],
+            ['k','к'],['l','л'],['m','м'],['n','н'],['o','о'],
+            ['p','п'],['r','р'],['s','с'],['t','т'],['u','у'],
+            ['f','ф'],['y','ы'],
+        ],
+        ukrainian: [
+            ['shch','щ'],['sh','ш'],['zh','ж'],['ch','ч'],['kh','х'],
+            ['ts','ц'],['ya','я'],['yu','ю'],['ye','є'],['yi','ї'],
+            ['a','а'],['b','б'],['v','в'],['h','г'],['g','ґ'],
+            ['d','д'],['e','е'],['z','з'],['i','і'],
+            ['k','к'],['l','л'],['m','м'],['n','н'],['o','о'],
+            ['p','п'],['r','р'],['s','с'],['t','т'],['u','у'],
+            ['f','ф'],['y','и'],
+        ],
+        serbian: [
+            ['dzh','џ'],['lj','љ'],['nj','њ'],['sh','ш'],['zh','ж'],
+            ['ch','ч'],['dj','ђ'],
+            ['a','а'],['b','б'],['v','в'],['g','г'],['d','д'],
+            ['e','е'],['z','з'],['i','и'],['j','ј'],
+            ['k','к'],['l','л'],['m','м'],['n','н'],['o','о'],
+            ['p','п'],['r','р'],['s','с'],['t','т'],
+            ['u','у'],['f','ф'],['h','х'],['c','ц'],
+        ],
+    },
+};
+
+// ================================================================
+//  STATE
+// ================================================================
+let mode = 'greek';        // 'greek' | 'cyrillic' | 'ipa'
+let sub = 'modern';        // varies by mode
+let showIPA = false;
+let focusedInput = null;
+
+const THEME_COLORS = {
+    greek:   { modern: '#f0f5fa', ancient: '#f5f0e4' },
+    cyrillic: { russian: '#0c0c0c', ukrainian: '#0c0c0c', serbian: '#0c0c0c' },
+    ipa:     { _: '#faf6ee' },
+};
+
+// ================================================================
+//  MODE / SUB-MODE
+// ================================================================
+function setMode(m) {
+    mode = m;
+    // Set default sub-mode
+    if (m === 'greek')    sub = document.querySelector('#subGreek .sub-tab.active')?.dataset.sub || 'modern';
+    if (m === 'cyrillic') sub = document.querySelector('#subCyrillic .sub-tab.active')?.dataset.sub || 'russian';
+    if (m === 'ipa')      sub = '_';
+
+    // Toggle tabs
+    document.querySelectorAll('.main-toggle .tab').forEach(t =>
+        t.classList.toggle('active', t.dataset.mode === m));
+
+    // Show/hide sub-toggles
+    document.getElementById('subGreek').classList.toggle('hidden', m !== 'greek');
+    document.getElementById('subCyrillic').classList.toggle('hidden', m !== 'cyrillic');
+
+    // Show/hide transliteration
+    document.getElementById('translitWrap').classList.toggle('hidden', m === 'ipa');
+
+    // Show/hide IPA pill (not needed in IPA mode)
+    document.getElementById('pillWrap').classList.toggle('hidden', m === 'ipa');
+
+    applyTheme();
+    render();
+    clearTranslit();
+}
+
+function setSub(s) {
+    sub = s;
+    const container = mode === 'greek' ? 'subGreek' : 'subCyrillic';
+    document.querySelectorAll(`#${container} .sub-tab`).forEach(t =>
+        t.classList.toggle('active', t.dataset.sub === s));
+
+    applyTheme();
+    render();
+    clearTranslit();
+}
+
+function applyTheme() {
+    const body = document.body;
+    body.className = ''; // reset
+    if (mode === 'greek') {
+        body.classList.add('theme-greek');
+        if (sub === 'ancient') body.classList.add('ancient');
+    } else if (mode === 'cyrillic') {
+        body.classList.add('theme-cyrillic');
+    } else {
+        body.classList.add('theme-ipa');
+    }
+    if (showIPA) body.classList.add('show-ipa');
+
+    // Meta theme-color
+    const colors = THEME_COLORS[mode];
+    const col = colors[sub] || colors[Object.keys(colors)[0]];
+    document.getElementById('metaTheme').setAttribute('content', col);
+}
+
+// ================================================================
+//  RENDER
+// ================================================================
+function render() {
+    if (mode === 'ipa') {
+        renderIPAChart();
+    } else {
+        renderLetterGrid();
+    }
+    updateHero();
+    updateScriptLabel();
+    filterLetters(); // re-apply any active search
+}
+
+function updateHero() {
+    const data = (mode === 'ipa')
+        ? { hero: '/ˌaɪ piː ˈeɪ/', sub: 'International Phonetic Alphabet' }
+        : ALPHA[mode][sub];
+    document.getElementById('heroTitle').textContent = data.hero;
+    document.getElementById('heroSub').textContent = data.sub;
+}
+
+function updateScriptLabel() {
+    const data = (mode !== 'ipa') ? ALPHA[mode][sub] : null;
+    document.getElementById('scriptLabel').textContent = data ? data.label : '';
+}
+
+function renderLetterGrid() {
+    const data = ALPHA[mode][sub];
+    const grid = document.getElementById('letterGrid');
+    grid.innerHTML = data.letters.map((lt, idx) => `
+        <div class="letter-card" data-idx="${idx}"
+             data-search="${(lt.name + ' ' + lt.lat + ' ' + lt.snd).toLowerCase()}"
+             onclick="copyChar('${lt.u}${lt.l.replace('/', '')}')">
+            <div class="letter-char">${lt.u} ${lt.l}</div>
+            <div class="letter-name">${lt.name}</div>
+            <div class="letter-latin">${lt.lat}</div>
+            <div class="letter-sound">${lt.snd}</div>
+            <div class="letter-ipa-tag">${lt.ipa}</div>
+        </div>
+    `).join('');
+}
+
+function renderIPAChart() {
+    const wrap = document.getElementById('ipaChartWrap');
+    wrap.innerHTML = IPA_DATA.map(cat => `
+        <div class="ipa-cat-title">${cat.title}</div>
+        <div class="ipa-grid">
+            ${cat.items.map(it => `
+                <div class="ipa-cell"
+                     data-search="${(it.desc + ' ' + it.ex).toLowerCase()}"
+                     onclick="copyChar('${it.sym.replace(/'/g,"\\'")}')">
+                    <div class="ipa-sym">${it.sym}</div>
+                    <div class="ipa-desc">${it.desc}</div>
+                    <div class="ipa-ex">${it.ex}</div>
+                </div>
+            `).join('')}
+        </div>
+    `).join('');
+}
+
+// ================================================================
+//  TRANSLITERATION ENGINE
+// ================================================================
+function latinToScript(text) {
+    const map = TRANSLIT[mode]?.[sub];
+    if (!map) return text;
+
+    let result = '';
+    let i = 0;
+    const lower = text.toLowerCase();
+
+    while (i < text.length) {
+        let matched = false;
+        for (const [lat, scr] of map) {
+            if (lower.startsWith(lat, i)) {
+                // Preserve case of first character
+                const isUpper = text[i] !== text[i].toLowerCase() && text[i] === text[i].toUpperCase();
+                result += isUpper ? scr.toUpperCase() : scr;
+                i += lat.length;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) { result += text[i]; i++; }
+    }
+
+    // Fix Greek final sigma
+    if (mode === 'greek') {
+        result = result.replace(/σ(?=\s|[.,;:!?\-]|$)/g, 'ς');
+    }
+    return result;
+}
+
+function scriptToLatin(text) {
+    const data = ALPHA[mode]?.[sub];
+    if (!data) return text;
+
+    // Build reverse map from letter data
+    const rmap = {};
+    for (const lt of data.letters) {
+        // lowercase script char → latin
+        if (lt.l.includes('/')) {
+            for (const c of lt.l.split('/')) rmap[c] = lt.lat;
+        } else {
+            rmap[lt.l] = lt.lat;
+        }
+        rmap[lt.u] = lt.lat.charAt(0).toUpperCase() + lt.lat.slice(1);
+    }
+
+    let result = '';
+    for (const ch of text) {
+        result += rmap[ch] !== undefined ? rmap[ch] : ch;
+    }
+    return result;
+}
+
+// Wire up transliteration textareas
+const latinBox = document.getElementById('latinBox');
+const scriptBox = document.getElementById('scriptBox');
+
+latinBox.addEventListener('focus', () => focusedInput = 'latin');
+scriptBox.addEventListener('focus', () => focusedInput = 'script');
+
+latinBox.addEventListener('input', () => {
+    if (focusedInput === 'latin') {
+        scriptBox.value = latinToScript(latinBox.value);
+    }
+});
+scriptBox.addEventListener('input', () => {
+    if (focusedInput === 'script') {
+        latinBox.value = scriptToLatin(scriptBox.value);
+    }
+});
+
+function clearTranslit() {
+    latinBox.value = '';
+    scriptBox.value = '';
+}
+
+// ================================================================
+//  SEARCH / FILTER
+// ================================================================
+const searchBox = document.getElementById('searchBox');
+searchBox.addEventListener('input', filterLetters);
+
+function filterLetters() {
+    const q = searchBox.value.trim().toLowerCase();
+
+    if (mode === 'ipa') {
+        // Filter IPA cells + hide empty categories
+        const wrap = document.getElementById('ipaChartWrap');
+        const titles = wrap.querySelectorAll('.ipa-cat-title');
+        const grids = wrap.querySelectorAll('.ipa-grid');
+
+        titles.forEach((title, idx) => {
+            const grid = grids[idx];
+            if (!grid) return;
+            let anyVisible = false;
+            grid.querySelectorAll('.ipa-cell').forEach(cell => {
+                const match = !q || cell.dataset.search.includes(q);
+                cell.classList.toggle('hidden', !match);
+                if (match) anyVisible = true;
+            });
+            title.style.display = anyVisible ? '' : 'none';
+            grid.style.display = anyVisible ? '' : 'none';
+        });
+    } else {
+        document.querySelectorAll('.letter-card').forEach(card => {
+            const match = !q || card.dataset.search.includes(q);
+            card.classList.toggle('hidden', !match);
+        });
+    }
+}
+
+// ================================================================
+//  IPA TOGGLE
+// ================================================================
+function toggleShowIPA() {
+    showIPA = !showIPA;
+    document.body.classList.toggle('show-ipa', showIPA);
+    const pill = document.getElementById('ipaPill');
+    pill.classList.toggle('active', showIPA);
+    pill.textContent = showIPA ? 'Hide IPA' : 'Show IPA';
+}
+
+// ================================================================
+//  COPY + TOAST
+// ================================================================
+function copyChar(chars) {
+    navigator.clipboard.writeText(chars).then(() => {
+        showToast(`Copied ${chars}`);
+    }).catch(() => {
+        showToast(`${chars}`);
+    });
+}
+
+let toastTimer;
+function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 1600);
+}
+
+// ================================================================
+//  INIT
+// ================================================================
+render();
+</script>
+
+</body>
+</html>
