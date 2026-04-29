@@ -18,6 +18,9 @@
     <script src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"></script>
     <!-- Phosphor Icons -->
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Cropper.js — mobile-friendly image cropper -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 
     <style>
         /* ── Base & Reset ── */
@@ -531,6 +534,108 @@
             display: inline-block;
             animation: spin 1s linear infinite;
         }
+
+        /* ── Crop Modal ── */
+        .crop-modal-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            background: #09090b;
+            flex-direction: column;
+        }
+
+        .crop-modal-backdrop.open {
+            display: flex;
+        }
+
+        .crop-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            padding-top: max(16px, env(safe-area-inset-top));
+            flex-shrink: 0;
+            border-bottom: 1px solid #27272a;
+        }
+
+        .crop-modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #f4f4f5;
+        }
+
+        .crop-modal-subtitle {
+            font-size: 12px;
+            color: #71717a;
+            margin-top: 2px;
+        }
+
+        .crop-cancel-btn {
+            background: #27272a;
+            border: none;
+            color: #a1a1aa;
+            font-size: 14px;
+            font-family: inherit;
+            padding: 8px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .crop-cancel-btn:hover {
+            background: #3f3f46;
+        }
+
+        .crop-viewport {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            background: #18181b;
+        }
+
+        /* Let Cropper.js fill the viewport */
+        .crop-viewport img {
+            display: block;
+            max-width: 100%;
+            /* actual sizing controlled by Cropper.js */
+        }
+
+        .crop-footer {
+            flex-shrink: 0;
+            padding: 16px 20px;
+            padding-bottom: max(16px, env(safe-area-inset-bottom));
+            border-top: 1px solid #27272a;
+        }
+
+        .crop-confirm-btn {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: #22c55e;
+            color: #09090b;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s, transform 0.1s;
+        }
+
+        .crop-confirm-btn:active {
+            transform: scale(0.98);
+        }
+
+        .crop-hint {
+            font-size: 12px;
+            color: #52525b;
+            text-align: center;
+            margin-top: 8px;
+        }
     </style>
 </head>
 
@@ -641,6 +746,26 @@
         </div>
     </div>
 
+    <!-- ── Crop Modal ── -->
+    <div class="crop-modal-backdrop" id="cropModal" role="dialog" aria-modal="true" aria-label="Crop cover image">
+        <div class="crop-modal-header">
+            <div>
+                <div class="crop-modal-title">Crop Cover Art</div>
+                <div class="crop-modal-subtitle">Pinch to zoom &middot; Drag to reposition</div>
+            </div>
+            <button class="crop-cancel-btn" id="cropCancelBtn">Cancel</button>
+        </div>
+        <div class="crop-viewport">
+            <img id="cropperImg" src="" alt="Image to crop">
+        </div>
+        <div class="crop-footer">
+            <button class="crop-confirm-btn" id="cropConfirmBtn">
+                <i class="ph ph-check-circle"></i> Use Crop
+            </button>
+            <p class="crop-hint">Square crop &bull; 1000&times;1000 px output</p>
+        </div>
+    </div>
+
     <script type="module">
         import { ID3Writer } from 'https://cdn.jsdelivr.net/npm/browser-id3-writer@6.3.1/dist/browser-id3-writer.mjs';
 
@@ -650,6 +775,8 @@
         let originalTags = { title: '', artist: '', album: '' };
         let originalCoverData = null; // { data: ArrayBuffer, format: string }
         let userReplacedCover = false; // Track if user explicitly chose a new cover
+        let croppedCoverBlob = null;   // Set after the user confirms the crop
+        let cropperInstance = null;    // Active Cropper.js instance
 
         // Detect iOS standalone mode
         const isStandalone = window.navigator.standalone === true
@@ -831,28 +958,92 @@
             document.getElementById('resultPanel').classList.remove('visible');
         });
 
-        // ── UI: Cover Image Handling ──
+        // ── UI: Cover Image Handling → open crop modal ──
         document.getElementById('coverImage').addEventListener('change', function (e) {
             const file = e.target.files[0];
-            const fileNameSpan = document.getElementById('imageFileName');
-            const previewContainer = document.getElementById('imagePreviewContainer');
-            const previewImg = document.getElementById('imagePreview');
-
-            if (file) {
-                userReplacedCover = true;
-                fileNameSpan.textContent = file.name;
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    previewImg.src = event.target.result;
-                    previewContainer.classList.add('visible');
-                }
-                reader.readAsDataURL(file);
-            } else {
-                fileNameSpan.textContent = 'Cover Image...';
-                previewContainer.classList.remove('visible');
-                userReplacedCover = false;
-            }
+            if (!file) return;
+            // Reset so a cancelled crop doesn't carry over a stale blob
+            croppedCoverBlob = null;
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                openCropModal(event.target.result, file.name);
+            };
+            reader.readAsDataURL(file);
+            // Clear the input so selecting the same file again still fires change
+            e.target.value = '';
         });
+
+        // ── Crop Modal Logic ──
+        function openCropModal(dataUrl, fileName) {
+            const modal = document.getElementById('cropModal');
+            const img   = document.getElementById('cropperImg');
+
+            // Tear down any previous Cropper instance before swapping src
+            if (cropperInstance) {
+                cropperInstance.destroy();
+                cropperInstance = null;
+            }
+
+            img.src = dataUrl;
+            modal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+
+            // Initialise Cropper.js after the image has loaded
+            img.onload = function () {
+                cropperInstance = new Cropper(img, {
+                    aspectRatio: 1,          // square — perfect for Spotify
+                    viewMode: 1,             // crop box cannot exceed the canvas
+                    dragMode: 'move',        // dragging moves the image, not the box
+                    autoCropArea: 0.9,       // crop box starts at 90 % of the image
+                    responsive: true,
+                    restore: false,
+                    guides: false,
+                    center: false,
+                    highlight: false,
+                    cropBoxMovable: false,   // box is fixed; user moves the image
+                    cropBoxResizable: false, // locked square
+                    toggleDragModeOnDblclick: false,
+                    minContainerHeight: document.querySelector('.crop-viewport').clientHeight,
+                });
+            };
+
+            // Store filename for the label after confirming
+            modal._pendingFileName = fileName;
+        }
+
+        function closeCropModal(confirmed) {
+            const modal = document.getElementById('cropModal');
+            modal.classList.remove('open');
+            document.body.style.overflow = '';
+
+            if (!confirmed) {
+                // User cancelled — if there was no previous cover, reset the label
+                if (!croppedCoverBlob && !originalCoverData) {
+                    document.getElementById('imageFileName').textContent = 'Cover Image...';
+                    document.getElementById('imagePreviewContainer').classList.remove('visible');
+                }
+                if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+                return;
+            }
+
+            // Export the crop as a 1000×1000 JPEG blob
+            const canvas = cropperInstance.getCroppedCanvas({ width: 1000, height: 1000, imageSmoothingQuality: 'high' });
+            canvas.toBlob(function (blob) {
+                croppedCoverBlob = blob;
+                userReplacedCover = true;
+
+                // Update the UI preview
+                const url = URL.createObjectURL(blob);
+                document.getElementById('imagePreview').src = url;
+                document.getElementById('imagePreviewContainer').classList.add('visible');
+                document.getElementById('imageFileName').textContent = document.getElementById('cropModal')._pendingFileName || 'Cropped image';
+            }, 'image/jpeg', 0.92);
+
+            if (cropperInstance) { cropperInstance.destroy(); cropperInstance = null; }
+        }
+
+        document.getElementById('cropCancelBtn').addEventListener('click',  () => closeCropModal(false));
+        document.getElementById('cropConfirmBtn').addEventListener('click', () => closeCropModal(true));
 
         // ── UI: Messaging ──
         function showMessage(text, type) {
@@ -1009,8 +1200,8 @@
                 if (artist) writer.setFrame('TPE1', [artist]);
                 if (album) writer.setFrame('TALB', album);
 
-                if (imageInput) {
-                    const imageBuffer = await imageInput.arrayBuffer();
+                if (croppedCoverBlob) {
+                    const imageBuffer = await croppedCoverBlob.arrayBuffer();
                     writer.setFrame('APIC', { type: 3, data: imageBuffer, description: 'Cover' });
                 } else if (originalCoverData) {
                     writer.setFrame('APIC', { type: 3, data: originalCoverData.data, description: 'Cover' });
@@ -1031,7 +1222,7 @@
 
                 // ── Show result ──
                 const blobUrl = URL.createObjectURL(taggedBlob);
-                showResultPanel(taggedBlob, blobUrl, fileName, title, artist, imageInput);
+                showResultPanel(taggedBlob, blobUrl, fileName, title, artist, croppedCoverBlob);
                 showMessage("Done! Your file is ready.", 'success');
 
             } catch (error) {
@@ -1059,10 +1250,8 @@
             resultArtist.textContent = artist || '';
 
             // Show cover art
-            if (imageInput) {
-                const reader = new FileReader();
-                reader.onload = (e) => { resultCover.src = e.target.result; };
-                reader.readAsDataURL(imageInput);
+            if (croppedCoverBlob) {
+                resultCover.src = URL.createObjectURL(croppedCoverBlob);
                 resultCover.style.display = 'block';
             } else if (originalCoverData) {
                 const blob = new Blob([originalCoverData.data], { type: originalCoverData.format });
